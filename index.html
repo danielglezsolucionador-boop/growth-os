@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Growth OS v3.0</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f4;
+      --bg-tertiary: #f0f0ef;
+      --text-primary: #1a1a18;
+      --text-secondary: #6b6b67;
+      --text-tertiary: #9b9b96;
+      --border-light: rgba(0,0,0,0.1);
+      --border-mid: rgba(0,0,0,0.18);
+      --border-strong: rgba(0,0,0,0.28);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --green: #1D9E75;
+      --green-light: #EAF3DE;
+      --green-dark: #0F6E56;
+      --green-text: #3B6D11;
+      --amber: #EF9F27;
+      --amber-light: #FAEEDA;
+      --amber-text: #854F0B;
+      --red: #E24B4A;
+      --red-light: #FCEBEB;
+      --red-text: #A32D2D;
+      --blue: #378ADD;
+      --blue-light: #E6F1FB;
+      --blue-text: #185FA5;
+      --pink-light: #FBEAF0;
+      --pink-text: #993556;
+      --gray-light: #F1EFE8;
+      --gray-text: #5F5E5A;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1c1c1a;
+        --bg-secondary: #252523;
+        --bg-tertiary: #2e2e2b;
+        --text-primary: #f0efe8;
+        --text-secondary: #a0a09a;
+        --text-tertiary: #6b6b66;
+        --border-light: rgba(255,255,255,0.08);
+        --border-mid: rgba(255,255,255,0.14);
+        --border-strong: rgba(255,255,255,0.22);
+        --green-light: #0a2e1e;
+        --green-text: #5dcaa5;
+        --amber-light: #2e1f06;
+        --amber-text: #fac775;
+        --red-light: #2c1010;
+        --red-text: #f09595;
+        --blue-light: #071d35;
+        --blue-text: #85b7eb;
+        --pink-light: #2a0f1c;
+        --pink-text: #ed93b1;
+        --gray-light: #2c2c2a;
+        --gray-text: #b4b2a9;
+      }
+    }
+
+    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-tertiary); color: var(--text-primary); }
+
+    .app-shell { max-width: 680px; margin: 0 auto; min-height: 100vh; background: var(--bg-tertiary); }
+
+    /* Header */
+    .header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border-light); padding: 14px 16px 10px; position: sticky; top: 0; z-index: 50; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .header-title { font-size: 17px; font-weight: 600; color: var(--text-primary); }
+    .header-badge { font-size: 11px; background: var(--green-light); color: var(--green-text); padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+
+    /* Progress bar in header */
+    .header-progress { display: flex; align-items: center; gap: 8px; }
+    .progress-track { flex: 1; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; background: var(--green); transition: width .4s; }
+    .progress-label { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+
+    /* Tabs */
+    .tabs { display: flex; overflow-x: auto; gap: 4px; padding: 0 16px 10px; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { flex-shrink: 0; padding: 7px 14px; border: 0.5px solid var(--border-mid); border-radius: 20px; font-size: 13px; cursor: pointer; background: var(--bg-primary); color: var(--text-secondary); transition: all .15s; white-space: nowrap; }
+    .tab.active { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); font-weight: 500; }
+
+    /* Content */
+    .content { padding: 12px 12px 80px; }
+    .section { display: none; } .section.active { display: block; }
+
+    /* Cards */
+    .card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 10px; }
+    .card-title { font-size: 15px; font-weight: 500; color: var(--text-primary); margin-bottom: 12px; }
+    .card-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+
+    /* Metric grid */
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .metric { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 12px 14px; }
+    .metric .m-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .metric .m-value { font-size: 24px; font-weight: 600; color: var(--text-primary); line-height: 1; }
+    .metric .m-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+
+    /* Action items */
+    .action-item { border: 0.5px solid var(--border-light); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 8px; background: var(--bg-primary); display: flex; gap: 12px; align-items: flex-start; }
+    .action-item.high { border-left: 3px solid var(--green); }
+    .action-item.mid { border-left: 3px solid var(--amber); }
+    .action-item.low { border-left: 3px solid var(--text-tertiary); }
+    .action-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+    .action-reason { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .check-circle { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border-mid); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all .15s; margin-top: 1px; }
+    .check-circle.done { background: var(--green); border-color: var(--green); color: #fff; }
+
+    /* Badges */
+    .badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500; margin-top: 6px; }
+    .badge-high { background: var(--green-light); color: var(--green-text); }
+    .badge-mid { background: var(--amber-light); color: var(--amber-text); }
+    .badge-low { background: var(--gray-light); color: var(--gray-text); }
+    .badge-info { background: var(--blue-light); color: var(--blue-text); }
+    .badge-viral { background: var(--pink-light); color: var(--pink-text); }
+
+    /* Insights */
+    .insight { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 0.5px solid var(--border-light); }
+    .insight:last-child { border-bottom: none; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .dot-green { background: var(--green); }
+    .dot-amber { background: var(--amber); }
+    .dot-red { background: var(--red); }
+    .insight-text { font-size: 13px; color: var(--text-primary); line-height: 1.55; }
+
+    /* A/B cards */
+    .ab-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 10px; }
+    .ab-versions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+    .ab-version { border: 0.5px solid var(--border-light); border-radius: var(--radius-md); padding: 10px; }
+    .ab-version.winner { border-color: var(--green); background: var(--green-light); }
+    .ab-version.loser { opacity: .55; }
+    .ab-ver-label { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+    .ab-ver-text { font-size: 13px; line-height: 1.45; }
+    .ab-ver-score { font-size: 11px; color: var(--text-secondary); margin-top: 5px; }
+    .ab-ver-score.win-label { color: var(--green-text); font-weight: 500; }
+
+    /* Ideas */
+    .idea-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 10px; }
+    .idea-title { font-size: 14px; font-weight: 500; margin: 6px 0; line-height: 1.45; }
+    .idea-angle { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+    .hook-bar-track { height: 5px; border-radius: 3px; background: var(--bg-secondary); margin: 6px 0; }
+    .hook-bar-fill { height: 100%; border-radius: 3px; background: var(--green); }
+    .score-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; }
+    .platform-chip { display: inline-block; font-size: 11px; padding: 2px 8px; background: var(--bg-secondary); color: var(--text-secondary); border-radius: 10px; margin: 2px; }
+
+    /* Learning */
+    .result-entry { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--border-light); }
+    .result-entry:last-child { border-bottom: none; }
+    .result-pill { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500; flex-shrink: 0; }
+    .pill-win { background: var(--green-light); color: var(--green-text); }
+    .pill-ok { background: var(--amber-light); color: var(--amber-text); }
+    .pill-lose { background: var(--red-light); color: var(--red-text); }
+
+    /* Frequency grid */
+    .freq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .freq-item { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 10px 12px; }
+    .freq-plat { font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; }
+    .freq-val { font-size: 14px; font-weight: 500; }
+    .freq-type { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+    /* Inputs */
+    input, select, textarea { width: 100%; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); padding: 10px 12px; font-size: 14px; background: var(--bg-primary); color: var(--text-primary); margin-bottom: 10px; font-family: inherit; -webkit-appearance: none; appearance: none; }
+    input:focus, select:focus { outline: none; border-color: var(--green); }
+
+    /* Buttons */
+    .btn { padding: 10px 16px; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); font-size: 14px; cursor: pointer; background: var(--bg-primary); color: var(--text-primary); font-family: inherit; transition: all .15s; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--green); color: #fff; border-color: var(--green-dark); }
+    .btn-primary:active { background: var(--green-dark); }
+    .btn-full { width: 100%; margin-top: 8px; }
+    .btn-sm { padding: 7px 12px; font-size: 13px; }
+
+    /* Row utility */
+    .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .muted { font-size: 12px; color: var(--text-secondary); }
+    .divider { border: none; border-top: 0.5px solid var(--border-light); margin: 12px 0; }
+
+    /* Chart bars */
+    .chart-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .chart-col { flex: 1; min-width: 80px; }
+    .chart-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    .chart-bar-track { height: 6px; border-radius: 3px; background: var(--bg-secondary); margin-bottom: 4px; }
+    .chart-bar-fill { height: 100%; border-radius: 3px; background: #9FE1CB; }
+    .chart-bar-fill.best { background: var(--green); }
+    .chart-stat { font-size: 13px; font-weight: 500; }
+    .chart-sub { font-size: 11px; color: var(--text-secondary); }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; z-index: 200; }
+    .modal { background: var(--bg-primary); border-radius: 18px 18px 0 0; padding: 20px 16px 36px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+    .modal-hidden { display: none; }
+    .modal-handle { width: 40px; height: 4px; background: var(--border-mid); border-radius: 2px; margin: 0 auto 16px; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+    /* Filter bar */
+    .filter-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-chip { flex-shrink: 0; padding: 6px 12px; border: 0.5px solid var(--border-mid); border-radius: 20px; font-size: 13px; cursor: pointer; background: var(--bg-primary); color: var(--text-secondary); }
+    .filter-chip.active { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+
+    /* FAB */
+    .fab { position: fixed; bottom: 20px; right: 20px; width: 52px; height: 52px; background: var(--green); border-radius: 50%; border: none; color: #fff; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; box-shadow: 0 4px 16px rgba(29,158,117,.35); transition: all .15s; }
+    .fab:active { transform: scale(0.93); }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 32px 16px; color: var(--text-tertiary); font-size: 14px; }
+
+    /* Completion bar */
+    .completion-row { display: flex; align-items: center; justify-content: space-between; }
+    .completion-text { font-size: 13px; color: var(--text-secondary); }
+    .completion-count { font-size: 13px; font-weight: 500; }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <span class="header-title">Growth OS</span>
+      <span class="header-badge" id="hdr-badge">v3.0</span>
+    </div>
+    <div class="header-progress">
+      <div class="progress-track"><div class="progress-fill" id="hdr-fill" style="width:24.9%"></div></div>
+      <span class="progress-label" id="hdr-label">1.247 / 5.000</span>
+    </div>
+    <div class="tabs" style="margin-top:10px;padding:0 0 2px">
+      <button class="tab active" onclick="showTab('hoy')">Hoy</button>
+      <button class="tab" onclick="showTab('experimentos')">A/B</button>
+      <button class="tab" onclick="showTab('motor')">Crecimiento</button>
+      <button class="tab" onclick="showTab('ideas')">Ideas</button>
+      <button class="tab" onclick="showTab('aprendizaje')">IA</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- TAB: HOY -->
+    <div id="tab-hoy" class="section active">
+      <div class="metric-grid">
+        <div class="metric">
+          <div class="m-label">Seguidores</div>
+          <div class="m-value" id="seg-val">1.247</div>
+          <div class="m-sub" id="seg-sub">Meta: 5.000</div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Progreso</div>
+          <div class="m-value" id="pct-val">24.9%</div>
+          <div class="m-sub" id="pct-sub">+18/día necesario</div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Días restantes</div>
+          <div class="m-value" id="dias-val">—</div>
+          <div class="m-sub">a ritmo actual</div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Ritmo</div>
+          <div class="m-value" id="ritmo-val">+9/día</div>
+          <div class="m-sub" id="ritmo-sub">Necesita aceleración</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-row">
+          <span class="card-title" style="margin:0">Plan de acción de hoy</span>
+          <span class="muted" id="fecha-hoy"></span>
+        </div>
+        <div id="acciones-list"></div>
+        <hr class="divider">
+        <div class="completion-row">
+          <span class="completion-text">Completadas</span>
+          <span class="completion-count" id="comp-count">0 / 4</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Actualizar seguimiento</div>
+        <input type="number" id="inp-seg" placeholder="Seguidores actuales" inputmode="numeric">
+        <input type="number" id="inp-ritmo" placeholder="Crecimiento hoy (+/-)" inputmode="numeric">
+        <button class="btn btn-primary btn-full" onclick="guardarMeta()">Guardar progreso</button>
+      </div>
+    </div>
+
+    <!-- TAB: EXPERIMENTOS -->
+    <div id="tab-experimentos" class="section">
+      <div class="metric-grid">
+        <div class="metric"><div class="m-label">Activos</div><div class="m-value" id="exp-act">2</div></div>
+        <div class="metric"><div class="m-label">Completados</div><div class="m-value" id="exp-comp">3</div></div>
+      </div>
+      <div id="exp-list"></div>
+    </div>
+
+    <!-- TAB: MOTOR -->
+    <div id="tab-motor" class="section">
+      <div class="card">
+        <div class="card-title">Diagnóstico</div>
+        <div id="diag-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Rendimiento por plataforma</div>
+        <div class="chart-row" id="plat-chart"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Alertas y oportunidades</div>
+        <div id="alertas-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Frecuencia óptima</div>
+        <div class="freq-grid" id="freq-grid"></div>
+      </div>
+    </div>
+
+    <!-- TAB: IDEAS -->
+    <div id="tab-ideas" class="section">
+      <div class="filter-bar" id="filtros-ideas">
+        <button class="filter-chip active" onclick="filtrarIdeas('all',this)">Todos</button>
+        <button class="filter-chip" onclick="filtrarIdeas('viral',this)">Viral</button>
+        <button class="filter-chip" onclick="filtrarIdeas('autoridad',this)">Autoridad</button>
+        <button class="filter-chip" onclick="filtrarIdeas('conversion',this)">Conversión</button>
+      </div>
+      <div id="ideas-list"></div>
+    </div>
+
+    <!-- TAB: APRENDIZAJE -->
+    <div id="tab-aprendizaje" class="section">
+      <div class="card">
+        <div class="card-title">Patrones detectados</div>
+        <div id="patrones-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-row">
+          <span class="card-title" style="margin:0">Historial</span>
+          <button class="btn btn-sm btn-primary" onclick="abrirModal('modal-resultado')">+ Registrar</button>
+        </div>
+        <div id="historial-list"></div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+
+  <!-- FAB (contextual) -->
+  <button class="fab" id="fab-btn" onclick="fabAction()">+</button>
+
+</div><!-- end app-shell -->
+
+<!-- MODAL: NUEVO EXPERIMENTO -->
+<div id="modal-ab" class="modal-overlay modal-hidden">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nuevo experimento A/B</div>
+    <input id="ab-variable" placeholder="¿Qué estás probando? (ej: Hook pregunta vs afirmación)">
+    <input id="ab-va" placeholder="Versión A">
+    <input id="ab-vb" placeholder="Versión B">
+    <select id="ab-plat"><option>Instagram</option><option>TikTok</option><option>LinkedIn</option><option>Twitter/X</option></select>
+    <select id="ab-tipo"><option value="hook">Hook</option><option value="formato">Formato</option><option value="cta">CTA</option><option value="hora">Hora de publicación</option></select>
+    <div class="modal-actions">
+      <button class="btn" style="flex:1" onclick="cerrarModal('modal-ab')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:2" onclick="crearExp()">Crear experimento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: REGISTRAR RESULTADO -->
+<div id="modal-resultado" class="modal-overlay modal-hidden">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Registrar resultado</div>
+    <input id="res-cont" placeholder="Título del contenido">
+    <select id="res-plat"><option>Instagram</option><option>TikTok</option><option>LinkedIn</option><option>Twitter/X</option></select>
+    <select id="res-tipo"><option value="viral">Viral</option><option value="autoridad">Autoridad</option><option value="conversion">Conversión</option></select>
+    <input id="res-reach" type="number" placeholder="Alcance obtenido" inputmode="numeric">
+    <select id="res-resultado"><option value="win">Funcionó bien</option><option value="ok">Resultado medio</option><option value="lose">No funcionó</option></select>
+    <input id="res-aprend" placeholder="¿Qué aprendiste? (opcional)">
+    <div class="modal-actions">
+      <button class="btn" style="flex:1" onclick="cerrarModal('modal-resultado')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:2" onclick="guardarResultado()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CERRAR EXPERIMENTO -->
+<div id="modal-cerrar-exp" class="modal-overlay modal-hidden">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Registrar resultados</div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">¿Cuánto alcance obtuvo cada versión?</p>
+    <input id="ce-sa" type="number" placeholder="Alcance Versión A" inputmode="numeric">
+    <input id="ce-sb" type="number" placeholder="Alcance Versión B" inputmode="numeric">
+    <div class="modal-actions">
+      <button class="btn" style="flex:1" onclick="cerrarModal('modal-cerrar-exp')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:2" onclick="confirmarCierreExp()">Confirmar ganador</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'growth-os-v3-state';
+
+const defaultState = {
+  seguidores: 1247,
+  meta: 5000,
+  ritmo: 9,
+  acciones: [
+    {id:1,titulo:'Publicar Reel con hook de pregunta (formato viral)',razon:'Formato con mayor proyección según historial',impacto:'alto',hecho:false},
+    {id:2,titulo:'Probar versión B: "El error que te cuesta seguidores"',razon:'Experimento activo — recopila datos de alcance',impacto:'alto',hecho:false},
+    {id:3,titulo:'Responder todos los comentarios en las primeras 2h',razon:'El algoritmo premia la interacción temprana (+30% alcance)',impacto:'medio',hecho:false},
+    {id:4,titulo:'Publicar Story con encuesta sobre próximo contenido',razon:'Aumenta retención y genera insights de audiencia',impacto:'medio',hecho:false},
+  ],
+  experimentos: [
+    {id:1,variable:'Hook de pregunta vs afirmación',vA:'¿Sabías que el 90% comete este error?',vB:'El 90% comete este error sin saberlo.',plataforma:'Instagram',tipo:'hook',estado:'activo',ganador:null,scoreA:0,scoreB:0},
+    {id:2,variable:'CTA directo vs CTA suave',vA:'Sígueme para más contenido como este',vB:'Guarda esto si te fue útil',plataforma:'TikTok',tipo:'cta',estado:'activo',ganador:null,scoreA:0,scoreB:0},
+    {id:3,variable:'Formato carrusel vs video corto',vA:'Carrusel 7 slides',vB:'Reel 30s',plataforma:'Instagram',tipo:'formato',estado:'completado',ganador:'B',scoreA:1240,scoreB:3890},
+    {id:4,variable:'Publicar a las 9am vs 7pm',vA:'Lunes 9:00 AM',vB:'Lunes 7:00 PM',plataforma:'Instagram',tipo:'hora',estado:'completado',ganador:'B',scoreA:890,scoreB:2100},
+    {id:5,variable:'Hook con número vs sin número',vA:'3 errores que frenan tu crecimiento',vB:'Los errores que frenan tu crecimiento',plataforma:'LinkedIn',tipo:'hook',estado:'completado',ganador:'A',scoreA:4200,scoreB:1800},
+  ],
+  ideas: [
+    {titulo:'3 errores que cometen el 90% al crear contenido',tipo:'viral',hook:'Hook de número + error común',hookScore:92,viral:88,conversion:45,angulo:'Posicionarte como alguien que ya cometió esos errores',plataformas:['Instagram','TikTok']},
+    {titulo:'Por qué paré de publicar diario (y qué pasó)',tipo:'autoridad',hook:'Contra-intuición personal',hookScore:85,viral:72,conversion:68,angulo:'Vulnerabilidad + dato sorpresa = confianza',plataformas:['Instagram','LinkedIn']},
+    {titulo:'El sistema exacto que uso para crear 30 piezas al mes',tipo:'conversion',hook:'Sistema + número + proceso',hookScore:88,viral:65,conversion:91,angulo:'Ofrecer el sistema como lead magnet',plataformas:['LinkedIn','Instagram']},
+    {titulo:'Reaccionando a los peores consejos de marketing',tipo:'viral',hook:'Formato reacción = alta retención',hookScore:94,viral:95,conversion:30,angulo:'Entretener mientras posicionas autoridad',plataformas:['TikTok','Instagram']},
+    {titulo:'Lo que nadie te dice sobre los primeros 1.000 seguidores',tipo:'autoridad',hook:'Secreto + milestone de identificación',hookScore:89,viral:78,conversion:62,angulo:'Hablarle directamente al estado de tu audiencia ahora',plataformas:['Instagram','Twitter/X']},
+    {titulo:'Comparé 5 estrategias de crecimiento. Esto ganó.',tipo:'conversion',hook:'Comparativa + resultado claro',hookScore:91,viral:80,conversion:85,angulo:'Datos reales como prueba de autoridad',plataformas:['LinkedIn','Instagram']},
+  ],
+  resultados: [
+    {contenido:'Reel sobre el error del 90%',plataforma:'Instagram',tipo:'viral',reach:4200,resultado:'win',aprendizaje:'Hook numérico funciona mejor en Reels'},
+    {contenido:'Carrusel sobre productividad',plataforma:'Instagram',tipo:'autoridad',reach:890,resultado:'ok',aprendizaje:''},
+    {contenido:'Post sobre herramientas IA',plataforma:'LinkedIn',tipo:'conversion',reach:3100,resultado:'win',aprendizaje:'LinkedIn responde mejor a herramientas IA'},
+    {contenido:'TikTok espontáneo en exteriores',plataforma:'TikTok',tipo:'viral',reach:12000,resultado:'win',aprendizaje:'Contenido sin editar tiene mayor retención en TikTok'},
+  ]
+};
+
+function loadState() {
+  try { const s = localStorage.getItem(STORAGE_KEY); return s ? JSON.parse(s) : JSON.parse(JSON.stringify(defaultState)); }
+  catch(e) { return JSON.parse(JSON.stringify(defaultState)); }
+}
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
+
+let state = loadState();
+let tabActual = 'hoy';
+let expPendienteId = null;
+let filtroIdeas = 'all';
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+const TABS = ['hoy','experimentos','motor','ideas','aprendizaje'];
+function showTab(t) {
+  tabActual = t;
+  TABS.forEach(id => {
+    document.getElementById('tab-'+id).classList.toggle('active', id===t);
+  });
+  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', TABS[i]===t));
+  const fab = document.getElementById('fab-btn');
+  if(t==='experimentos') { fab.textContent='+'; fab.style.display='flex'; }
+  else if(t==='aprendizaje') { fab.textContent='+'; fab.style.display='flex'; }
+  else { fab.style.display='none'; }
+  renderAll();
+}
+function fabAction() {
+  if(tabActual==='experimentos') abrirModal('modal-ab');
+  else if(tabActual==='aprendizaje') abrirModal('modal-resultado');
+}
+
+// ─── RENDER HOY ──────────────────────────────────────────────────────────────
+function renderHoy() {
+  const pct = Math.round(state.seguidores/state.meta*1000)/10;
+  const restantes = state.meta - state.seguidores;
+  const dias = state.ritmo>0 ? Math.round(restantes/state.ritmo) : 999;
+  const ritmNec = Math.ceil(restantes/90);
+  document.getElementById('seg-val').textContent = state.seguidores.toLocaleString('es');
+  document.getElementById('pct-val').textContent = pct + '%';
+  document.getElementById('dias-val').textContent = dias<999 ? dias : '∞';
+  document.getElementById('ritmo-val').textContent = '+'+state.ritmo+'/día';
+  document.getElementById('pct-sub').textContent = '+'+ritmNec+'/día necesario (90d)';
+  document.getElementById('ritmo-sub').textContent = state.ritmo>=ritmNec ? 'A buen ritmo' : 'Necesita aceleración';
+  document.getElementById('hdr-fill').style.width = pct+'%';
+  document.getElementById('hdr-label').textContent = state.seguidores.toLocaleString('es')+' / '+state.meta.toLocaleString('es');
+
+  const d = new Date();
+  document.getElementById('fecha-hoy').textContent = d.toLocaleDateString('es-PE',{weekday:'short',day:'numeric',month:'short'});
+
+  const done = state.acciones.filter(a=>a.hecho).length;
+  document.getElementById('comp-count').textContent = done+' / '+state.acciones.length;
+  document.getElementById('acciones-list').innerHTML = state.acciones.map(a=>`
+    <div class="action-item ${a.impacto==='alto'?'high':a.impacto==='medio'?'mid':'low'}">
+      <div class="check-circle ${a.hecho?'done':''}" onclick="toggleAccion(${a.id})">${a.hecho?'✓':''}</div>
+      <div style="flex:1">
+        <div class="action-title" style="${a.hecho?'text-decoration:line-through;opacity:.45':''}">${a.titulo}</div>
+        <div class="action-reason">${a.razon}</div>
+        <span class="badge badge-${a.impacto==='alto'?'high':a.impacto==='medio'?'mid':'low'}">Impacto ${a.impacto}</span>
+      </div>
+    </div>`).join('');
+}
+
+function toggleAccion(id) { const a=state.acciones.find(x=>x.id===id); if(a){a.hecho=!a.hecho;saveState();renderHoy();} }
+
+function guardarMeta() {
+  const s=parseInt(document.getElementById('inp-seg').value); const r=parseInt(document.getElementById('inp-ritmo').value);
+  if(!isNaN(s)) state.seguidores=s; if(!isNaN(r)) state.ritmo=r;
+  saveState(); renderHoy();
+  document.getElementById('inp-seg').value=''; document.getElementById('inp-ritmo').value='';
+}
+
+// ─── RENDER EXPERIMENTOS ─────────────────────────────────────────────────────
+function renderExperimentos() {
+  const activos = state.experimentos.filter(e=>e.estado==='activo');
+  const completados = state.experimentos.filter(e=>e.estado==='completado');
+  document.getElementById('exp-act').textContent = activos.length;
+  document.getElementById('exp-comp').textContent = completados.length;
+  document.getElementById('exp-list').innerHTML = state.experimentos.map(e=>`
+    <div class="ab-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div><span class="badge badge-info">${e.tipo}</span> <span class="muted">${e.plataforma}</span></div>
+        <span class="badge badge-${e.estado==='activo'?'high':'low'}">${e.estado}</span>
+      </div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:8px;line-height:1.4">${e.variable}</div>
+      <div class="ab-versions">
+        <div class="ab-version ${e.ganador==='A'?'winner':e.ganador==='B'?'loser':''}">
+          <div class="ab-ver-label" style="color:var(--blue-text)">Versión A</div>
+          <div class="ab-ver-text">${e.vA}</div>
+          ${e.scoreA>0?`<div class="ab-ver-score">Alcance: ${e.scoreA.toLocaleString('es')}</div>`:''}
+          ${e.ganador==='A'?`<div class="ab-ver-score win-label">Ganadora</div>`:''}
+        </div>
+        <div class="ab-version ${e.ganador==='B'?'winner':e.ganador==='A'?'loser':''}">
+          <div class="ab-ver-label" style="color:var(--pink-text)">Versión B</div>
+          <div class="ab-ver-text">${e.vB}</div>
+          ${e.scoreB>0?`<div class="ab-ver-score">Alcance: ${e.scoreB.toLocaleString('es')}</div>`:''}
+          ${e.ganador==='B'?`<div class="ab-ver-score win-label">Ganadora</div>`:''}
+        </div>
+      </div>
+      ${e.estado==='activo'?`<button class="btn btn-sm btn-full" style="margin-top:0" onclick="abrirCierreExp(${e.id})">Registrar resultados y cerrar</button>`:''}
+    </div>`).join('');
+}
+
+function abrirCierreExp(id) { expPendienteId=id; document.getElementById('ce-sa').value=''; document.getElementById('ce-sb').value=''; abrirModal('modal-cerrar-exp'); }
+function confirmarCierreExp() {
+  const e = state.experimentos.find(x=>x.id===expPendienteId); if(!e) return;
+  e.scoreA=parseInt(document.getElementById('ce-sa').value)||0; e.scoreB=parseInt(document.getElementById('ce-sb').value)||0;
+  e.ganador = e.scoreA>=e.scoreB?'A':'B'; e.estado='completado';
+  cerrarModal('modal-cerrar-exp'); saveState(); renderExperimentos();
+}
+
+function crearExp() {
+  const variable=document.getElementById('ab-variable').value, vA=document.getElementById('ab-va').value, vB=document.getElementById('ab-vb').value;
+  if(!variable||!vA||!vB) return;
+  state.experimentos.unshift({id:Date.now(),variable,vA,vB,plataforma:document.getElementById('ab-plat').value,tipo:document.getElementById('ab-tipo').value,estado:'activo',ganador:null,scoreA:0,scoreB:0});
+  cerrarModal('modal-ab'); saveState(); renderExperimentos();
+}
+
+// ─── RENDER MOTOR ─────────────────────────────────────────────────────────────
+function renderMotor() {
+  const platStats={};
+  state.resultados.forEach(r=>{
+    if(!platStats[r.plataforma]) platStats[r.plataforma]={total:0,wins:0,reach:0};
+    platStats[r.plataforma].total++; if(r.resultado==='win') platStats[r.plataforma].wins++;
+    platStats[r.plataforma].reach+=r.reach;
+  });
+  const maxR = Math.max(...Object.values(platStats).map(p=>p.reach),1);
+  const bestPlat = Object.entries(platStats).sort((a,b)=>b[1].reach-a[1].reach)[0];
+  const tipoStats={};
+  state.resultados.forEach(r=>{ if(!tipoStats[r.tipo]) tipoStats[r.tipo]={total:0,wins:0}; tipoStats[r.tipo].total++; if(r.resultado==='win') tipoStats[r.tipo].wins++; });
+  const bestTipo = Object.entries(tipoStats).sort((a,b)=>(b[1].wins/b[1].total)-(a[1].wins/a[1].total))[0];
+
+  document.getElementById('plat-chart').innerHTML = Object.entries(platStats).map(([pl,s])=>`
+    <div class="chart-col">
+      <div class="chart-label">${pl}</div>
+      <div class="chart-bar-track"><div class="chart-bar-fill ${s.reach===maxR?'best':''}" style="width:${Math.round(s.reach/maxR*100)}%"></div></div>
+      <div class="chart-stat">${(s.reach/1000).toFixed(1)}k</div>
+      <div class="chart-sub">${Math.round(s.wins/s.total*100)}% éxito</div>
+    </div>`).join('');
+
+  document.getElementById('diag-list').innerHTML = `
+    <div class="insight"><div class="dot dot-green"></div><div class="insight-text"><strong>Plataforma prioritaria:</strong> ${bestPlat?bestPlat[0]:'TikTok'} — mayor alcance histórico. Concentra el 60% del esfuerzo aquí.</div></div>
+    <div class="insight"><div class="dot dot-green"></div><div class="insight-text"><strong>Tipo efectivo:</strong> ${bestTipo?bestTipo[0]:'Viral'} con ${bestTipo?Math.round(bestTipo[1].wins/bestTipo[1].total*100):75}% tasa de éxito.</div></div>
+    <div class="insight"><div class="dot dot-amber"></div><div class="insight-text"><strong>Hooks con número</strong> generan +30% CTR según experimentos. Aplicar en próximas 3 piezas.</div></div>
+    <div class="insight"><div class="dot dot-amber"></div><div class="insight-text"><strong>Repetir éxito:</strong> Formato "error del 90%" = 4.200 alcance. Crear variante con mismo patrón esta semana.</div></div>`;
+
+  document.getElementById('alertas-list').innerHTML = `
+    <div class="insight"><div class="dot dot-green"></div><div class="insight-text"><strong>Oportunidad viral:</strong> Contenido de reacción trending en TikTok. Capitalizar en 48h.</div></div>
+    <div class="insight"><div class="dot dot-amber"></div><div class="insight-text"><strong>Frecuencia baja:</strong> 3 piezas/semana. Meta óptima es 5-6 para este ritmo de crecimiento.</div></div>
+    <div class="insight"><div class="dot dot-red"></div><div class="insight-text"><strong>Cambio de estrategia:</strong> Contenido de autoridad con 0% conversión a nuevos seguidores. Reducir temporalmente.</div></div>`;
+
+  document.getElementById('freq-grid').innerHTML = [
+    {plat:'Instagram',freq:'1 Reel/día',tipo:'Viral + Conversión'},
+    {plat:'TikTok',freq:'2 videos/día',tipo:'Viral'},
+    {plat:'LinkedIn',freq:'3-4 posts/sem',tipo:'Autoridad'},
+    {plat:'Twitter/X',freq:'5-7 tweets/sem',tipo:'Conversación'},
+  ].map(f=>`<div class="freq-item"><div class="freq-plat">${f.plat}</div><div class="freq-val">${f.freq}</div><div class="freq-type">${f.tipo}</div></div>`).join('');
+}
+
+// ─── RENDER IDEAS ─────────────────────────────────────────────────────────────
+function filtrarIdeas(f, el) {
+  filtroIdeas=f;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderIdeas();
+}
+function renderIdeas() {
+  const ideas = filtroIdeas==='all' ? state.ideas : state.ideas.filter(i=>i.tipo===filtroIdeas);
+  document.getElementById('ideas-list').innerHTML = ideas.map(i=>`
+    <div class="idea-card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span class="badge badge-${i.tipo==='viral'?'viral':i.tipo==='autoridad'?'info':'high'}">${i.tipo}</span>
+        <span class="muted">Hook: ${i.hookScore}/100</span>
+      </div>
+      <div class="idea-title">${i.titulo}</div>
+      <div class="idea-angle">${i.angulo}</div>
+      <div class="hook-bar-track"><div class="hook-bar-fill" style="width:${i.hookScore}%"></div></div>
+      <div class="score-row"><span>Viral: ${i.viral}%</span><span>Conversión: ${i.conversion}%</span></div>
+      <div>${i.plataformas.map(p=>`<span class="platform-chip">${p}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+// ─── RENDER APRENDIZAJE ──────────────────────────────────────────────────────
+function renderAprendizaje() {
+  const byPlat={};
+  state.resultados.forEach(r=>{ if(!byPlat[r.plataforma]) byPlat[r.plataforma]={wins:0,total:0}; byPlat[r.plataforma].total++; if(r.resultado==='win') byPlat[r.plataforma].wins++; });
+  const bestPlat = Object.entries(byPlat).sort((a,b)=>(b[1].wins/b[1].total)-(a[1].wins/a[1].total))[0];
+
+  document.getElementById('patrones-list').innerHTML = `
+    <div class="insight"><div class="dot dot-green"></div><div class="insight-text">Mejor plataforma: <strong>${bestPlat?bestPlat[0]:'TikTok'}</strong> — ${bestPlat?Math.round(bestPlat[1].wins/bestPlat[1].total*100):75}% tasa de éxito.</div></div>
+    <div class="insight"><div class="dot dot-green"></div><div class="insight-text">Hooks con números ganan consistentemente en experimentos cerrados. Usar número en el 70% de títulos.</div></div>
+    <div class="insight"><div class="dot dot-green"></div><div class="insight-text">Publicar a las 7pm supera a 9am por +136% de alcance (experimento cerrado).</div></div>
+    <div class="insight"><div class="dot dot-amber"></div><div class="insight-text">Tienes ${state.resultados.length} resultados. Con 10+ las recomendaciones mejoran significativamente.</div></div>`;
+
+  document.getElementById('historial-list').innerHTML = state.resultados.length===0
+    ? '<div class="empty">Sin resultados aún. Registra tu primer contenido.</div>'
+    : state.resultados.map(r=>`
+      <div class="result-entry">
+        <span class="result-pill ${r.resultado==='win'?'pill-win':r.resultado==='ok'?'pill-ok':'pill-lose'}">${r.resultado==='win'?'Éxito':r.resultado==='ok'?'Regular':'Falló'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.contenido}</div>
+          <div class="muted">${r.plataforma} · ${r.tipo} · ${r.reach.toLocaleString('es')}${r.aprendizaje?' · '+r.aprendizaje:''}</div>
+        </div>
+      </div>`).join('');
+}
+
+function guardarResultado() {
+  const contenido=document.getElementById('res-cont').value; if(!contenido) return;
+  state.resultados.unshift({contenido,plataforma:document.getElementById('res-plat').value,tipo:document.getElementById('res-tipo').value,reach:parseInt(document.getElementById('res-reach').value)||0,resultado:document.getElementById('res-resultado').value,aprendizaje:document.getElementById('res-aprend').value});
+  cerrarModal('modal-resultado'); saveState(); renderAprendizaje();
+}
+
+// ─── MODALS ──────────────────────────────────────────────────────────────────
+function abrirModal(id) { document.getElementById(id).classList.remove('modal-hidden'); document.body.style.overflow='hidden'; }
+function cerrarModal(id) { document.getElementById(id).classList.add('modal-hidden'); document.body.style.overflow=''; }
+document.querySelectorAll('.modal-overlay').forEach(m=>{ m.addEventListener('click',e=>{ if(e.target===m) cerrarModal(m.id); }); });
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+function renderAll() {
+  if(tabActual==='hoy') renderHoy();
+  else if(tabActual==='experimentos') renderExperimentos();
+  else if(tabActual==='motor') renderMotor();
+  else if(tabActual==='ideas') renderIdeas();
+  else if(tabActual==='aprendizaje') renderAprendizaje();
+  // Always keep header updated
+  const pct = Math.round(state.seguidores/state.meta*1000)/10;
+  document.getElementById('hdr-fill').style.width = pct+'%';
+  document.getElementById('hdr-label').textContent = state.seguidores.toLocaleString('es')+' / '+state.meta.toLocaleString('es');
+}
+
+// Initial render
+renderHoy();
+document.getElementById('fab-btn').style.display = 'none';
+</script>
+</body>
+</html>
