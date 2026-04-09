@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Growth OS — Daniel</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-primary: #ffffff; --bg-secondary: #f5f5f4; --bg-tertiary: #f0f0ef;
+      --text-primary: #1a1a18; --text-secondary: #6b6b67; --text-tertiary: #9b9b96;
+      --border-light: rgba(0,0,0,0.09); --border-mid: rgba(0,0,0,0.16);
+      --radius-md: 8px; --radius-lg: 14px;
+      --green: #1D9E75; --green-light: #EAF3DE; --green-dark: #0F6E56; --green-text: #3B6D11;
+      --amber: #EF9F27; --amber-light: #FAEEDA; --amber-text: #854F0B;
+      --red: #E24B4A; --red-light: #FCEBEB; --red-text: #A32D2D;
+      --blue: #378ADD; --blue-light: #E6F1FB; --blue-text: #185FA5;
+      --pink-light: #FBEAF0; --pink-text: #993556;
+      --gray-light: #F1EFE8; --gray-text: #5F5E5A;
+      --purple-light: #EEEDFE; --purple-text: #534AB7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1c1c1a; --bg-secondary: #252523; --bg-tertiary: #2e2e2b;
+        --text-primary: #f0efe8; --text-secondary: #a0a09a; --text-tertiary: #6b6b66;
+        --border-light: rgba(255,255,255,0.07); --border-mid: rgba(255,255,255,0.13);
+        --green-light: #0a2e1e; --green-text: #5dcaa5;
+        --amber-light: #2e1f06; --amber-text: #fac775;
+        --red-light: #2c1010; --red-text: #f09595;
+        --blue-light: #071d35; --blue-text: #85b7eb;
+        --pink-light: #2a0f1c; --pink-text: #ed93b1;
+        --gray-light: #2c2c2a; --gray-text: #b4b2a9;
+        --purple-light: #16153a; --purple-text: #afa9ec;
+      }
+    }
+    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-tertiary); color: var(--text-primary); }
+    .app { max-width: 680px; margin: 0 auto; min-height: 100vh; }
+    .header { background: var(--bg-primary); border-bottom: 0.5px solid var(--border-light); padding: 14px 16px 0; position: sticky; top: 0; z-index: 50; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .header-name { font-size: 17px; font-weight: 600; }
+    .hgoal { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 600; background: var(--red-light); color: var(--red-text); }
+    .hgoal.ok { background: var(--green-light); color: var(--green-text); }
+    .prog-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .prog-track { flex: 1; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 3px; background: var(--green); transition: width .4s; }
+    .prog-label { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+    .tabs { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { flex-shrink: 0; padding: 7px 13px; border: 0.5px solid var(--border-mid); border-radius: 20px; font-size: 13px; cursor: pointer; background: var(--bg-primary); color: var(--text-secondary); white-space: nowrap; }
+    .tab.active { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); font-weight: 500; }
+    .content { padding: 12px 12px 80px; }
+    .section { display: none; } .section.active { display: block; }
+    .card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 10px; }
+    .card-title { font-size: 15px; font-weight: 500; margin-bottom: 12px; }
+    .mg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .metric { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 12px 14px; }
+    .ml { font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; }
+    .mv { font-size: 22px; font-weight: 600; line-height: 1.1; }
+    .ms { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; }
+    .countdown { border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; background: var(--red-light); }
+    .countdown.ok { background: var(--green-light); }
+    .cd-label { font-size: 12px; font-weight: 500; color: var(--red-text); }
+    .cd-sub { font-size: 11px; color: var(--red-text); opacity:.8; margin-top:2px; }
+    .countdown.ok .cd-label, .countdown.ok .cd-sub { color: var(--green-text); }
+    .cd-num { font-size: 30px; font-weight: 700; color: var(--red-text); }
+    .countdown.ok .cd-num { color: var(--green-text); }
+    .action { border: 0.5px solid var(--border-light); border-radius: var(--radius-md); padding: 13px 14px; margin-bottom: 8px; display: flex; gap: 12px; }
+    .action.high { border-left: 3px solid var(--red); }
+    .action.medium { border-left: 3px solid var(--amber); }
+    .action.low { border-left: 3px solid var(--text-tertiary); }
+    .abody { flex: 1; }
+    .atitle { font-size: 14px; font-weight: 500; margin-bottom: 3px; line-height: 1.4; }
+    .areason { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .ameta { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+    .chk { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border-mid); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-top: 1px; }
+    .chk.done { background: var(--green); border-color: var(--green); color: #fff; }
+    .badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+    .bh { background: var(--red-light); color: var(--red-text); }
+    .bm { background: var(--amber-light); color: var(--amber-text); }
+    .bl { background: var(--gray-light); color: var(--gray-text); }
+    .bi { background: var(--blue-light); color: var(--blue-text); }
+    .bv { background: var(--pink-light); color: var(--pink-text); }
+    .ba { background: var(--purple-light); color: var(--purple-text); }
+    .bc { background: var(--green-light); color: var(--green-text); }
+    .btk { background: #f0f0ef; color: #1a1a18; }
+    .big { background: #fce4f3; color: #c13584; }
+    .bfb { background: #e7f0fd; color: #1877F2; }
+    .bli { background: #e8f0f9; color: #0A66C2; }
+    @media(prefers-color-scheme:dark){.btk{background:#333;color:#f0efe8;}}
+    .insight { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 0.5px solid var(--border-light); }
+    .insight:last-child { border-bottom: none; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .dg { background: var(--green); } .da { background: var(--amber); } .dr { background: var(--red); }
+    .itext { font-size: 13px; line-height: 1.55; }
+    .ab-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 10px; }
+    .ab-vs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+    .abv { border: 0.5px solid var(--border-light); border-radius: var(--radius-md); padding: 10px; }
+    .abv.win { border-color: var(--green); background: var(--green-light); }
+    .abv.lose { opacity:.5; }
+    .abvl { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+    .abvt { font-size: 13px; line-height: 1.4; }
+    .abvs { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+    .abvs.w { color: var(--green-text); font-weight: 500; }
+    .idea-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 10px; }
+    .ititle { font-size: 14px; font-weight: 500; margin: 7px 0 5px; line-height: 1.45; }
+    .iangle { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+    .bartrack { height: 5px; border-radius: 3px; background: var(--bg-secondary); margin: 4px 0 6px; }
+    .barfill { height: 100%; border-radius: 3px; background: var(--green); }
+    .scorerow { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .rrow { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--border-light); }
+    .rrow:last-child { border-bottom: none; }
+    .rpill { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500; flex-shrink: 0; }
+    .rw { background: var(--green-light); color: var(--green-text); }
+    .ro { background: var(--amber-light); color: var(--amber-text); }
+    .rl { background: var(--red-light); color: var(--red-text); }
+    .freq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .fitem { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 10px 12px; }
+    .fplat { font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; font-weight: 600; }
+    .fval { font-size: 14px; font-weight: 600; }
+    .ftipo { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+    .platcard { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 8px; }
+    input, select { width: 100%; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); padding: 10px 12px; font-size: 14px; background: var(--bg-primary); color: var(--text-primary); margin-bottom: 10px; font-family: inherit; -webkit-appearance: none; }
+    input:focus, select:focus { outline: none; border-color: var(--green); }
+    .btn { padding: 10px 16px; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); font-size: 14px; cursor: pointer; background: var(--bg-primary); color: var(--text-primary); font-family: inherit; transition: all .15s; }
+    .btn:active { transform: scale(0.97); }
+    .btp { background: var(--green); color: #fff; border-color: var(--green-dark); font-weight: 500; }
+    .bfull { width: 100%; margin-top: 4px; }
+    .bsm { padding: 7px 12px; font-size: 13px; }
+    .fbar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+    .fbar::-webkit-scrollbar { display: none; }
+    .fchip { flex-shrink: 0; padding: 6px 12px; border: 0.5px solid var(--border-mid); border-radius: 20px; font-size: 13px; cursor: pointer; background: var(--bg-primary); color: var(--text-secondary); }
+    .fchip.active { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: flex-end; z-index: 200; }
+    .modal { background: var(--bg-primary); border-radius: 18px 18px 0 0; padding: 20px 16px 40px; width: 100%; max-height: 88vh; overflow-y: auto; }
+    .mhandle { width: 40px; height: 4px; background: var(--border-mid); border-radius: 2px; margin: 0 auto 16px; }
+    .mtitle { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+    .mactions { display: flex; gap: 8px; margin-top: 6px; }
+    .mhidden { display: none; }
+    .fab { position: fixed; bottom: 20px; right: 16px; width: 52px; height: 52px; background: var(--green); border-radius: 50%; border: none; color: #fff; font-size: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; box-shadow: 0 4px 20px rgba(29,158,117,.4); }
+    .fab:active { transform: scale(0.92); }
+    .rsb { display: flex; align-items: center; justify-content: space-between; }
+    .row { display: flex; align-items: center; gap: 8px; }
+    .muted { font-size: 12px; color: var(--text-secondary); }
+    .divider { border: none; border-top: 0.5px solid var(--border-light); margin: 12px 0; }
+    .empty { text-align: center; padding: 28px 16px; color: var(--text-tertiary); font-size: 14px; }
+    strong { font-weight: 500; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-top">
+      <span class="header-name">Growth OS — Daniel</span>
+      <span class="hgoal" id="hgoal">MODO AGRESIVO</span>
+    </div>
+    <div class="prog-row">
+      <div class="prog-track"><div class="prog-fill" id="pfill"></div></div>
+      <span class="prog-label" id="plabel"></span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="goTab('hoy')">Hoy</button>
+      <button class="tab" onclick="goTab('plataformas')">Plataformas</button>
+      <button class="tab" onclick="goTab('experimentos')">A/B</button>
+      <button class="tab" onclick="goTab('ideas')">Ideas</button>
+      <button class="tab" onclick="goTab('motor')">Motor</button>
+      <button class="tab" onclick="goTab('ia')">IA</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- HOY -->
+    <div id="tab-hoy" class="section active">
+      <div id="cdBanner"></div>
+      <div class="mg2">
+        <div class="metric"><div class="ml">Total seguidores</div><div class="mv" id="segTotal">—</div><div class="ms">todas las plataformas</div></div>
+        <div class="metric"><div class="ml">Faltan para meta</div><div class="mv" id="segFaltan">—</div><div class="ms">de 5.000</div></div>
+        <div class="metric"><div class="ml">Ritmo actual</div><div class="mv" id="ritmoHoy">—</div><div class="ms" id="ritmoEst"></div></div>
+        <div class="metric"><div class="ml">Necesitas</div><div class="mv" id="ritmoNec">—</div><div class="ms">por día (30 días)</div></div>
+      </div>
+      <div class="card">
+        <div class="rsb" style="margin-bottom:12px">
+          <span class="card-title" style="margin:0">Plan de acción de hoy</span>
+          <span class="muted" id="fechaHoy"></span>
+        </div>
+        <div id="accionesList"></div>
+        <div class="divider"></div>
+        <div class="rsb"><span class="muted">Completadas</span><span style="font-size:13px;font-weight:500" id="compCount">0/0</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Actualizar seguidores</div>
+        <div class="mg2" style="margin-bottom:8px">
+          <div><div class="muted" style="margin-bottom:4px;color:#1877F2;font-weight:500">Facebook</div><input type="number" id="inFb" placeholder="ej: 420" inputmode="numeric"></div>
+          <div><div class="muted" style="margin-bottom:4px;color:#c13584;font-weight:500">Instagram</div><input type="number" id="inIg" placeholder="ej: 180" inputmode="numeric"></div>
+          <div><div class="muted" style="margin-bottom:4px;font-weight:500">TikTok</div><input type="number" id="inTk" placeholder="ej: 90" inputmode="numeric"></div>
+          <div><div class="muted" style="margin-bottom:4px;color:#0A66C2;font-weight:500">LinkedIn</div><input type="number" id="inLi" placeholder="ej: 55" inputmode="numeric"></div>
+        </div>
+        <input type="number" id="inRitmo" placeholder="Crecimiento total de hoy (+/-)" inputmode="numeric">
+        <button class="btn btp bfull" onclick="guardarSeg()">Guardar progreso del día</button>
+      </div>
+    </div>
+
+    <!-- PLATAFORMAS -->
+    <div id="tab-plataformas" class="section">
+      <div id="platCards"></div>
+      <div class="card"><div class="card-title" style="color:#1877F2">Facebook — Plataforma principal</div>
+        <div class="insight"><div class="dot dg"></div><div class="itext">Tu base actual. Foco en <strong>grupos, Reels y contenido compartible</strong>. El orgánico de Facebook sigue siendo potente para marketing y negocios.</div></div>
+        <div class="insight"><div class="dot dg"></div><div class="itext">Publica <strong>2 Reels/día</strong>. El algoritmo de Facebook premia la consistencia más que la viralidad en este nicho.</div></div>
+        <div class="insight"><div class="dot da"></div><div class="itext">Únete a <strong>5 grupos activos</strong> de marketing/IA y participa con valor diariamente. Esto genera +40-60 seguidores/semana de forma orgánica.</div></div>
+      </div>
+      <div class="card"><div class="card-title" style="color:#c13584">Instagram — Motor viral</div>
+        <div class="insight"><div class="dot dg"></div><div class="itext"><strong>Reels de 15-30s</strong> con hook en los primeros 2 segundos. El 80% del crecimiento en Instagram viene de Reels.</div></div>
+        <div class="insight"><div class="dot da"></div><div class="itext">Reutiliza tu contenido de TikTok sin marca de agua. Usa <strong>snapTik.app</strong> para descargarlo limpio antes de subir a Instagram.</div></div>
+      </div>
+      <div class="card"><div class="card-title">TikTok — Crecimiento explosivo</div>
+        <div class="insight"><div class="dot dg"></div><div class="itext">Un solo video puede darte <strong>1.000 seguidores en un día</strong>. En modo agresivo: 2-3 videos diarios para maximizar probabilidad de hit viral.</div></div>
+        <div class="insight"><div class="dot da"></div><div class="itext">Hook en los primeros <strong>1.5 segundos</strong>. Si el usuario no para el scroll, el video muere. Testea hooks constantemente con experimentos A/B.</div></div>
+      </div>
+      <div class="card"><div class="card-title" style="color:#0A66C2">LinkedIn — Autoridad y conversión</div>
+        <div class="insight"><div class="dot dg"></div><div class="itext">El <strong>mayor ROI por seguidor</strong> para tu nicho. Un seguidor de LinkedIn en marketing/negocios vale 5x más en conversión que uno de TikTok.</div></div>
+        <div class="insight"><div class="dot da"></div><div class="itext">Formato ganador: <strong>historia personal → aprendizaje → dato accionable</strong>. Posts largos con esta estructura tienen 3x más alcance orgánico.</div></div>
+      </div>
+    </div>
+
+    <!-- EXPERIMENTOS -->
+    <div id="tab-experimentos" class="section">
+      <div class="mg2">
+        <div class="metric"><div class="ml">Activos</div><div class="mv" id="expAct">0</div></div>
+        <div class="metric"><div class="ml">Completados</div><div class="mv" id="expDone">0</div></div>
+      </div>
+      <div id="expList"></div>
+    </div>
+
+    <!-- IDEAS -->
+    <div id="tab-ideas" class="section">
+      <div class="fbar">
+        <button class="fchip active" onclick="setFiltro('all',this)">Todas</button>
+        <button class="fchip" onclick="setFiltro('viral',this)">Viral</button>
+        <button class="fchip" onclick="setFiltro('ia',this)">IA</button>
+        <button class="fchip" onclick="setFiltro('negocios',this)">Negocios</button>
+        <button class="fchip" onclick="setFiltro('autoridad',this)">Autoridad</button>
+        <button class="fchip" onclick="setFiltro('conversion',this)">Conversión</button>
+      </div>
+      <div id="ideasList"></div>
+    </div>
+
+    <!-- MOTOR -->
+    <div id="tab-motor" class="section">
+      <div class="card"><div class="card-title">Diagnóstico en tiempo real</div><div id="diagList"></div></div>
+      <div class="card"><div class="card-title">Frecuencia óptima — 30 días agresivos</div><div class="freq-grid" id="freqGrid"></div></div>
+      <div class="card"><div class="card-title">Plan semana a semana</div>
+        <div class="insight"><div class="dot dg"></div><div class="itext"><strong>Semana 1:</strong> Máximo volumen en TikTok + Facebook. Publicar el doble de lo normal para detectar qué formatos resuenan con tu audiencia.</div></div>
+        <div class="insight"><div class="dot da"></div><div class="itext"><strong>Semana 2:</strong> Identificar las 2 piezas con más alcance. Crear 3 variantes de cada una. Doblar la apuesta en lo que ya funcionó.</div></div>
+        <div class="insight"><div class="dot da"></div><div class="itext"><strong>Semana 3:</strong> Activar reutilización cruzada entre plataformas. Un video de TikTok → Reel de Instagram + clip para Facebook + reflexión para LinkedIn.</div></div>
+        <div class="insight"><div class="dot dr"></div><div class="itext"><strong>Semana 4:</strong> Sprint final. Colaboraciones con creadores del nicho, contenido de alta producción, y CTAs directos a seguir.</div></div>
+      </div>
+    </div>
+
+    <!-- IA -->
+    <div id="tab-ia" class="section">
+      <div class="card"><div class="card-title">Patrones detectados</div><div id="patronesList"></div></div>
+      <div class="card">
+        <div class="rsb" style="margin-bottom:12px">
+          <span class="card-title" style="margin:0">Historial de resultados</span>
+          <button class="btn bsm btp" onclick="openModal('mResultado')">+ Registrar</button>
+        </div>
+        <div id="historialList"></div>
+      </div>
+    </div>
+
+  </div>
+  <button class="fab" id="fab" onclick="fabClick()" style="display:none">+</button>
+</div>
+
+<!-- MODAL: NUEVO EXPERIMENTO -->
+<div id="mAb" class="modal-overlay mhidden">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">Nuevo experimento A/B</div>
+    <input id="abVar" placeholder="¿Qué estás probando?">
+    <input id="abVa" placeholder="Versión A">
+    <input id="abVb" placeholder="Versión B">
+    <select id="abPlat"><option>TikTok</option><option>Instagram</option><option>Facebook</option><option>LinkedIn</option></select>
+    <select id="abTipo"><option value="hook">Hook</option><option value="formato">Formato</option><option value="cta">CTA</option><option value="hora">Hora</option><option value="tema">Tema</option></select>
+    <div class="mactions">
+      <button class="btn" style="flex:1" onclick="closeModal('mAb')">Cancelar</button>
+      <button class="btn btp" style="flex:2" onclick="crearExp()">Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CERRAR EXP -->
+<div id="mCerrar" class="modal-overlay mhidden">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">Registrar resultados</div>
+    <input id="ceA" type="number" placeholder="Alcance Versión A" inputmode="numeric">
+    <input id="ceB" type="number" placeholder="Alcance Versión B" inputmode="numeric">
+    <div class="mactions">
+      <button class="btn" style="flex:1" onclick="closeModal('mCerrar')">Cancelar</button>
+      <button class="btn btp" style="flex:2" onclick="confirmarExp()">Confirmar ganador</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: RESULTADO -->
+<div id="mResultado" class="modal-overlay mhidden">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">Registrar resultado</div>
+    <input id="rCont" placeholder="Título del contenido">
+    <select id="rPlat"><option>TikTok</option><option>Instagram</option><option>Facebook</option><option>LinkedIn</option></select>
+    <select id="rTipo"><option value="viral">Viral</option><option value="ia">IA</option><option value="negocios">Negocios</option><option value="autoridad">Autoridad</option><option value="conversion">Conversión</option></select>
+    <input id="rReach" type="number" placeholder="Alcance obtenido" inputmode="numeric">
+    <select id="rResult"><option value="win">Funcionó muy bien</option><option value="ok">Resultado medio</option><option value="lose">No funcionó</option></select>
+    <input id="rApr" placeholder="¿Qué aprendiste? (opcional)">
+    <div class="mactions">
+      <button class="btn" style="flex:1" onclick="closeModal('mResultado')">Cancelar</button>
+      <button class="btn btp" style="flex:2" onclick="guardarResultado()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SK='gos-daniel-v1', META=5000, DIAS=30;
+const FINICIO=new Date('2026-04-09');
+const DEF={
+  plataformas:{facebook:420,instagram:180,tiktok:90,linkedin:55},
+  ritmo:9,
+  acciones:[
+    {id:1,t:'Publicar Reel/TikTok con hook de número (ej: "5 formas de usar IA para...")',r:'TikTok y Reels son tu palanca más rápida. Hook con número = +40% retención.',p:['TikTok','Instagram'],i:'high',done:false},
+    {id:2,t:'Participar en 2 grupos de Facebook con respuesta de alto valor',r:'Facebook es tu plataforma principal. Actividad en grupos = +30-50 seguidores orgánicos por semana.',p:['Facebook'],i:'high',done:false},
+    {id:3,t:'Publicar en LinkedIn: historia personal → aprendizaje → dato accionable',r:'LinkedIn tiene el mejor ROI por seguidor en tu nicho. Mínimo 4 posts/semana.',p:['LinkedIn'],i:'high',done:false},
+    {id:4,t:'Responder TODOS los comentarios en las primeras 2 horas de publicar',r:'El algoritmo mide interacción temprana. Responder aumenta alcance hasta 30% en todas las plataformas.',p:['Todas'],i:'medium',done:false},
+    {id:5,t:'Reutilizar el mejor TikTok de la semana en Instagram sin marca de agua',r:'Máxima eficiencia: mismo contenido, dos plataformas. Usa snapTik.app para descargar limpio.',p:['Instagram'],i:'medium',done:false},
+    {id:6,t:'Registrar resultados del día en el sistema (tab IA)',r:'El motor necesita datos reales. Sin registros, las recomendaciones no mejoran.',p:['Sistema'],i:'low',done:false},
+  ],
+  experimentos:[
+    {id:1,v:'Hook con número vs sin número en TikTok',va:'5 herramientas de IA que uso cada día',vb:'Las herramientas de IA que uso cada día',plat:'TikTok',tipo:'hook',est:'activo',g:null,sa:0,sb:0},
+    {id:2,v:'IA vs negocios en LinkedIn',va:'Cómo uso ChatGPT para crear 30 piezas al mes',vb:'El sistema que uso para crecer como consultor',plat:'LinkedIn',tipo:'tema',est:'activo',g:null,sa:0,sb:0},
+    {id:3,v:'Publicar 8am vs 7pm en Facebook',va:'8:00 AM',vb:'7:00 PM',plat:'Facebook',tipo:'hora',est:'completado',g:'B',sa:340,sb:890},
+  ],
+  ideas:[
+    {titulo:'5 formas de usar IA para crear contenido en 30 minutos',tipo:'ia',hookScore:94,viral:91,conv:72,angulo:'Mostrar el proceso real, no el resultado. La gente quiere ver el cómo, no el qué.',plats:['TikTok','Instagram']},
+    {titulo:'Cómo conseguí mis primeros 3 clientes sin gastar en publicidad',tipo:'negocios',hookScore:92,viral:85,conv:94,angulo:'Historia personal + resultado concreto. Vulnerabilidad + prueba social = máxima conversión.',plats:['LinkedIn','Facebook']},
+    {titulo:'El error que comete el 90% de los que quieren crecer en redes',tipo:'viral',hookScore:96,viral:94,conv:55,angulo:'Nombrar el error exacto que tu audiencia comete ahora. Funciona siempre.',plats:['TikTok','Instagram','Facebook']},
+    {titulo:'Reacciono a los peores consejos de marketing de esta semana',tipo:'viral',hookScore:93,viral:95,conv:38,angulo:'Entretener mientras demuestras autoridad. Repite cada semana con material nuevo.',plats:['TikTok','Instagram']},
+    {titulo:'El framework exacto que uso para crear posts que generan leads',tipo:'conversion',hookScore:89,viral:68,conv:96,angulo:'Dale algo accionable hoy. Termina con CTA a DM o recurso gratuito.',plats:['LinkedIn','Facebook']},
+    {titulo:'ChatGPT vs Claude vs Gemini para marketing — esto ganó',tipo:'ia',hookScore:91,viral:88,conv:75,angulo:'La gente quiere que alguien haga la prueba por ellos. Sé ese alguien.',plats:['TikTok','LinkedIn']},
+    {titulo:'Gané X seguidores en 7 días haciendo solo esto (sin ads)',tipo:'viral',hookScore:95,viral:93,conv:70,angulo:'Actualiza el número con tu progreso real cada semana. Máxima autenticidad.',plats:['TikTok','Instagram','Facebook']},
+    {titulo:'Lo que nadie te dice sobre los primeros 1.000 seguidores',tipo:'autoridad',hookScore:88,viral:80,conv:65,angulo:'Tu audiencia está exactamente ahí ahora. Hablarles directo genera conexión real.',plats:['Instagram','Facebook']},
+  ],
+  resultados:[
+    {c:'Video "5 herramientas de IA para crear contenido"',plat:'TikTok',tipo:'ia',reach:3200,res:'win',apr:'Hooks con números específicos generan 2x más retención'},
+    {c:'Post "Cómo estructura mi semana de contenido"',plat:'LinkedIn',tipo:'autoridad',reach:1100,res:'ok',apr:'LinkedIn necesita más narrativa personal'},
+    {c:'Reel de marketing con error común',plat:'Facebook',tipo:'viral',reach:4800,res:'win',apr:'Facebook Reels con subtítulos visibles tienen mayor alcance orgánico'},
+  ]
+};
+
+function load(){try{const s=localStorage.getItem(SK);return s?JSON.parse(s):JSON.parse(JSON.stringify(DEF));}catch(e){return JSON.parse(JSON.stringify(DEF));}}
+function save(){try{localStorage.setItem(SK,JSON.stringify(st));}catch(e){}}
+let st=load(), tabNow='hoy', filtroNow='all', expPend=null;
+
+function totalSeg(){return Object.values(st.plataformas).reduce((a,b)=>a+b,0);}
+function diasTrans(){return Math.max(1,Math.round((new Date()-FINICIO)/(86400000)));}
+function diasRest(){return Math.max(0,DIAS-diasTrans());}
+function rNec(){const f=Math.max(META-totalSeg(),0),d=diasRest();return d>0?Math.ceil(f/d):999;}
+function onTrack(){return st.ritmo>=rNec();}
+
+const TABS=['hoy','plataformas','experimentos','ideas','motor','ia'];
+function goTab(t){
+  tabNow=t;
+  TABS.forEach(id=>document.getElementById('tab-'+id).classList.toggle('active',id===t));
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',TABS[i]===t));
+  document.getElementById('fab').style.display=(t==='experimentos'||t==='ia')?'flex':'none';
+  renderTab(t);
+}
+function fabClick(){if(tabNow==='experimentos')openModal('mAb');else openModal('mResultado');}
+
+function renderHeader(){
+  const tot=totalSeg(),pct=Math.min(100,Math.round(tot/META*1000)/10);
+  document.getElementById('pfill').style.width=pct+'%';
+  document.getElementById('plabel').textContent=tot.toLocaleString('es')+' / '+META.toLocaleString('es');
+  const g=document.getElementById('hgoal');
+  g.textContent=onTrack()?'EN RITMO':'MODO AGRESIVO';
+  g.className='hgoal'+(onTrack()?' ok':'');
+}
+
+function renderHoy(){
+  const tot=totalSeg(),falt=Math.max(META-tot,0),rn=rNec(),dr=diasRest();
+  const b=document.getElementById('cdBanner');
+  b.className='countdown'+(onTrack()?' ok':'');
+  b.innerHTML=`<div><div class="cd-label">${onTrack()?'Vas en buen ritmo':'Alerta: necesitas acelerar'}</div><div class="cd-sub">${onTrack()?'Mantén la frecuencia actual':'Necesitas +'+rn+'/día para la meta'}</div></div><div style="text-align:right"><div class="cd-num">${dr}</div><div class="cd-sub" style="color:${onTrack()?'var(--green-text)':'var(--red-text)'}">días</div></div>`;
+  document.getElementById('segTotal').textContent=tot.toLocaleString('es');
+  document.getElementById('segFaltan').textContent=falt.toLocaleString('es');
+  document.getElementById('ritmoHoy').textContent='+'+st.ritmo+'/día';
+  document.getElementById('ritmoNec').textContent='+'+rn+'/día';
+  document.getElementById('ritmoEst').textContent=onTrack()?'En ritmo':'Insuficiente';
+  const d=new Date();
+  document.getElementById('fechaHoy').textContent=d.toLocaleDateString('es-PE',{weekday:'short',day:'numeric',month:'short'});
+  if(!st.acciones)st.acciones=DEF.acciones.map(a=>({...a}));
+  const done=st.acciones.filter(a=>a.done).length;
+  document.getElementById('compCount').textContent=done+'/'+st.acciones.length;
+  document.getElementById('accionesList').innerHTML=st.acciones.map(a=>`
+    <div class="action ${a.i}">
+      <div class="chk ${a.done?'done':''}" onclick="tog(${a.id})">${a.done?'✓':''}</div>
+      <div class="abody">
+        <div class="atitle" style="${a.done?'text-decoration:line-through;opacity:.4':''}">${a.t}</div>
+        <div class="areason">${a.r}</div>
+        <div class="ameta">
+          <span class="badge ${a.i==='high'?'bh':a.i==='medium'?'bm':'bl'}">Impacto ${a.i==='high'?'alto':a.i==='medium'?'medio':'bajo'}</span>
+          ${a.p.map(pl=>`<span class="badge ${pl==='TikTok'?'btk':pl==='Instagram'?'big':pl==='Facebook'?'bfb':pl==='LinkedIn'?'bli':'bl'}">${pl}</span>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function tog(id){if(!st.acciones)st.acciones=DEF.acciones.map(a=>({...a}));const a=st.acciones.find(x=>x.id===id);if(a){a.done=!a.done;save();renderHoy();}}
+
+function guardarSeg(){
+  const fb=parseInt(document.getElementById('inFb').value),ig=parseInt(document.getElementById('inIg').value),tk=parseInt(document.getElementById('inTk').value),li=parseInt(document.getElementById('inLi').value),ri=parseInt(document.getElementById('inRitmo').value);
+  if(!isNaN(fb))st.plataformas.facebook=fb; if(!isNaN(ig))st.plataformas.instagram=ig;
+  if(!isNaN(tk))st.plataformas.tiktok=tk; if(!isNaN(li))st.plataformas.linkedin=li;
+  if(!isNaN(ri))st.ritmo=ri;
+  st.acciones=DEF.acciones.map(a=>({...a}));
+  save(); renderHeader(); renderHoy();
+  ['inFb','inIg','inTk','inLi','inRitmo'].forEach(id=>document.getElementById(id).value='');
+}
+
+function renderPlataformas(){
+  const PLATS=[{k:'facebook',n:'Facebook',m:2000,bc:'bfb'},{k:'instagram',n:'Instagram',m:1500,bc:'big'},{k:'tiktok',n:'TikTok',m:1000,bc:'btk'},{k:'linkedin',n:'LinkedIn',m:500,bc:'bli'}];
+  document.getElementById('platCards').innerHTML=PLATS.map(p=>{
+    const v=st.plataformas[p.k]||0,pct=Math.min(100,Math.round(v/p.m*100));
+    return `<div class="platcard"><div class="rsb" style="margin-bottom:8px"><span style="font-size:15px;font-weight:500">${p.n}</span><span class="badge ${p.bc}">Meta parcial: ${p.m.toLocaleString('es')}</span></div><div class="rsb" style="margin-bottom:5px"><span style="font-size:22px;font-weight:600">${v.toLocaleString('es')}</span><span class="muted">${pct}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+
+function renderExperimentos(){
+  document.getElementById('expAct').textContent=st.experimentos.filter(e=>e.est==='activo').length;
+  document.getElementById('expDone').textContent=st.experimentos.filter(e=>e.est==='completado').length;
+  document.getElementById('expList').innerHTML=st.experimentos.map(e=>`
+    <div class="ab-card">
+      <div class="rsb" style="margin-bottom:8px"><div><span class="badge bi">${e.tipo}</span> <span class="muted">${e.plat}</span></div><span class="badge ${e.est==='activo'?'bh':'bl'}">${e.est}</span></div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:8px;line-height:1.4">${e.v}</div>
+      <div class="ab-vs">
+        <div class="abv ${e.g==='A'?'win':e.g==='B'?'lose':''}"><div class="abvl" style="color:var(--blue-text)">A</div><div class="abvt">${e.va}</div>${e.sa>0?`<div class="abvs">Alcance: ${e.sa.toLocaleString('es')}</div>`:''} ${e.g==='A'?`<div class="abvs w">Ganadora</div>`:''}</div>
+        <div class="abv ${e.g==='B'?'win':e.g==='A'?'lose':''}"><div class="abvl" style="color:var(--pink-text)">B</div><div class="abvt">${e.vb}</div>${e.sb>0?`<div class="abvs">Alcance: ${e.sb.toLocaleString('es')}</div>`:''} ${e.g==='B'?`<div class="abvs w">Ganadora</div>`:''}</div>
+      </div>
+      ${e.est==='activo'?`<button class="btn bsm bfull" onclick="abrirCerrar(${e.id})">Registrar resultados y cerrar</button>`:''}
+    </div>`).join('');
+}
+
+function crearExp(){
+  const v=document.getElementById('abVar').value,va=document.getElementById('abVa').value,vb=document.getElementById('abVb').value;
+  if(!v||!va||!vb)return;
+  st.experimentos.unshift({id:Date.now(),v,va,vb,plat:document.getElementById('abPlat').value,tipo:document.getElementById('abTipo').value,est:'activo',g:null,sa:0,sb:0});
+  closeModal('mAb'); save(); renderExperimentos();
+}
+function abrirCerrar(id){expPend=id;document.getElementById('ceA').value='';document.getElementById('ceB').value='';openModal('mCerrar');}
+function confirmarExp(){
+  const e=st.experimentos.find(x=>x.id===expPend);if(!e)return;
+  e.sa=parseInt(document.getElementById('ceA').value)||0; e.sb=parseInt(document.getElementById('ceB').value)||0;
+  e.g=e.sa>=e.sb?'A':'B'; e.est='completado';
+  closeModal('mCerrar'); save(); renderExperimentos();
+}
+
+function setFiltro(f,el){filtroNow=f;document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));if(el)el.classList.add('active');renderIdeas();}
+function renderIdeas(){
+  const ideas=filtroNow==='all'?st.ideas:st.ideas.filter(i=>i.tipo===filtroNow);
+  document.getElementById('ideasList').innerHTML=!ideas.length?'<div class="empty">Sin ideas en esta categoría.</div>':
+    ideas.map(i=>`<div class="idea-card">
+      <div class="rsb"><span class="badge ${i.tipo==='viral'?'bv':i.tipo==='ia'?'bi':i.tipo==='negocios'?'ba':i.tipo==='autoridad'?'ba':'bc'}">${i.tipo}</span><span class="muted">Hook: ${i.hookScore}/100</span></div>
+      <div class="ititle">${i.titulo}</div><div class="iangle">${i.angulo}</div>
+      <div class="bartrack"><div class="barfill" style="width:${i.hookScore}%"></div></div>
+      <div class="scorerow"><span>Viral: ${i.viral}%</span><span>Conversión: ${i.conv}%</span></div>
+      <div class="chips">${i.plats.map(p=>`<span class="badge ${p==='TikTok'?'btk':p==='Instagram'?'big':p==='Facebook'?'bfb':'bli'}">${p}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+function renderMotor(){
+  const byPlat={};
+  st.resultados.forEach(r=>{if(!byPlat[r.plat])byPlat[r.plat]={t:0,w:0,reach:0};byPlat[r.plat].t++;if(r.res==='win')byPlat[r.plat].w++;byPlat[r.plat].reach+=r.reach;});
+  const bp=Object.entries(byPlat).sort((a,b)=>b[1].reach-a[1].reach)[0];
+  const byTipo={};
+  st.resultados.forEach(r=>{if(!byTipo[r.tipo])byTipo[r.tipo]={t:0,w:0};byTipo[r.tipo].t++;if(r.res==='win')byTipo[r.tipo].w++;});
+  const bt=Object.entries(byTipo).sort((a,b)=>(b[1].w/b[1].t)-(a[1].w/a[1].t))[0];
+  document.getElementById('diagList').innerHTML=`
+    <div class="insight"><div class="dot dg"></div><div class="itext"><strong>Plataforma prioritaria:</strong> ${bp?bp[0]:'Facebook'} — mayor alcance en tu historial. 60% del esfuerzo diario aquí.</div></div>
+    <div class="insight"><div class="dot dg"></div><div class="itext"><strong>Contenido efectivo:</strong> ${bt?bt[0]:'IA'} con ${bt?Math.round(bt[1].w/bt[1].t*100):75}% tasa de éxito. Crear mínimo 3 piezas por semana.</div></div>
+    <div class="insight"><div class="dot da"></div><div class="itext"><strong>Oportunidad:</strong> Hooks con número tienen mayor retención consistente. Aplicar en el 70% del contenido esta semana.</div></div>
+    <div class="insight"><div class="dot dr"></div><div class="itext"><strong>Alerta:</strong> Ritmo actual +${st.ritmo}/día. Necesitas +${rNec()}/día para la meta. Incrementar volumen en TikTok y Facebook hoy.</div></div>`;
+  document.getElementById('freqGrid').innerHTML=[
+    {plat:'Facebook',freq:'2 Reels/día',tipo:'Viral + Educativo'},
+    {plat:'TikTok',freq:'2-3 videos/día',tipo:'Viral + IA'},
+    {plat:'Instagram',freq:'1-2 Reels/día',tipo:'Reutiliza de TikTok'},
+    {plat:'LinkedIn',freq:'4 posts/sem',tipo:'Autoridad + Negocios'},
+  ].map(f=>`<div class="fitem"><div class="fplat">${f.plat}</div><div class="fval">${f.freq}</div><div class="ftipo">${f.tipo}</div></div>`).join('');
+}
+
+function renderIa(){
+  const byPlat={};
+  st.resultados.forEach(r=>{if(!byPlat[r.plat])byPlat[r.plat]={t:0,w:0};byPlat[r.plat].t++;if(r.res==='win')byPlat[r.plat].w++;});
+  const bp=Object.entries(byPlat).sort((a,b)=>(b[1].w/b[1].t)-(a[1].w/a[1].t))[0];
+  document.getElementById('patronesList').innerHTML=`
+    <div class="insight"><div class="dot dg"></div><div class="itext">Mejor plataforma: <strong>${bp?bp[0]:'Facebook'}</strong> — ${bp?Math.round(bp[1].w/bp[1].t*100):75}% tasa de éxito en tu historial.</div></div>
+    <div class="insight"><div class="dot dg"></div><div class="itext">Contenido de IA tiene el mayor alcance promedio. Mínimo 3 piezas/semana sobre herramientas y casos reales de uso.</div></div>
+    <div class="insight"><div class="dot da"></div><div class="itext">Facebook Reels con subtítulos grandes superan a posts de texto por 4x en alcance orgánico.</div></div>
+    <div class="insight"><div class="dot da"></div><div class="itext">Tienes ${st.resultados.length} resultados. Con 15+ los patrones se vuelven estadísticamente relevantes para mejores recomendaciones.</div></div>`;
+  document.getElementById('historialList').innerHTML=!st.resultados.length?'<div class="empty">Registra tu primer resultado para activar el aprendizaje.</div>':
+    st.resultados.map(r=>`<div class="rrow"><span class="rpill ${r.res==='win'?'rw':r.res==='ok'?'ro':'rl'}">${r.res==='win'?'Éxito':r.res==='ok'?'Regular':'Falló'}</span><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.c}</div><div class="muted">${r.plat} · ${r.tipo} · ${r.reach.toLocaleString('es')}${r.apr?' · '+r.apr:''}</div></div></div>`).join('');
+}
+
+function guardarResultado(){
+  const c=document.getElementById('rCont').value;if(!c)return;
+  st.resultados.unshift({c,plat:document.getElementById('rPlat').value,tipo:document.getElementById('rTipo').value,reach:parseInt(document.getElementById('rReach').value)||0,res:document.getElementById('rResult').value,apr:document.getElementById('rApr').value});
+  closeModal('mResultado'); save(); renderIa();
+}
+
+function openModal(id){document.getElementById(id).classList.remove('mhidden');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).classList.add('mhidden');document.body.style.overflow='';}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
+
+function renderTab(t){
+  if(t==='hoy')renderHoy();
+  else if(t==='plataformas')renderPlataformas();
+  else if(t==='experimentos')renderExperimentos();
+  else if(t==='ideas')renderIdeas();
+  else if(t==='motor')renderMotor();
+  else if(t==='ia')renderIa();
+  renderHeader();
+}
+
+if(!st.acciones)st.acciones=DEF.acciones.map(a=>({...a}));
+renderHeader(); renderHoy();
+</script>
+</body>
+</html>
