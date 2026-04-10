@@ -1,0 +1,1978 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Laboratorio de Crecimiento</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--bg2:#111;--bg3:#181818;--bg4:#222;
+  --text:#f0efe8;--text2:#999;--text3:#555;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --green:#00e676;--green-dim:#00c853;--green-bg:rgba(0,230,118,0.09);
+  --amber:#ffb300;--amber-bg:rgba(255,179,0,0.09);
+  --red:#ff5252;--red-bg:rgba(255,82,82,0.09);
+  --blue:#448aff;--blue-bg:rgba(68,138,255,0.09);
+  --purple:#e040fb;--purple-bg:rgba(224,64,251,0.09);
+  --cyan:#00e5ff;--cyan-bg:rgba(0,229,255,0.09);
+  --radius:10px;--radius-lg:16px;
+}
+html,body{height:100%;font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+.app{max-width:720px;margin:0 auto;min-height:100vh;}
+.header{background:rgba(10,10,10,.95);border-bottom:0.5px solid var(--border);padding:12px 14px 0;position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.logo{display:flex;align-items:center;gap:8px;}
+.logo-icon{width:26px;height:26px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.logo-name{font-size:15px;font-weight:700;letter-spacing:-0.02em;}
+.logo-sub{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:1px;}
+.hbadge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;letter-spacing:.04em;background:var(--red-bg);color:var(--red);border:0.5px solid var(--red);}
+.hbadge.ok{background:var(--green-bg);color:var(--green);border-color:var(--green);}
+.prog-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.prog-track{flex:1;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:2px;background:var(--green);transition:width .4s;}
+.prog-label{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.plat-pills{display:flex;gap:4px;margin-bottom:8px;}
+.plat-pill{font-size:10px;padding:2px 7px;border-radius:20px;border:0.5px solid var(--border2);color:var(--text2);font-family:'JetBrains Mono',monospace;}
+.tabs{display:flex;gap:2px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;padding:6px 12px;border:0.5px solid transparent;border-radius:6px;font-size:12px;cursor:pointer;background:transparent;color:var(--text2);white-space:nowrap;font-family:'Space Grotesk',sans-serif;transition:all .15s;}
+.tab:hover{color:var(--text);background:var(--bg3);}
+.tab.active{background:var(--bg3);color:var(--text);border-color:var(--border2);font-weight:600;}
+.tab-badge{display:inline-block;background:var(--green);color:#000;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:4px;vertical-align:middle;}
+.content{padding:10px 12px 80px;}
+.section{display:none;}.section.active{display:block;}
+.pipeline{display:flex;align-items:center;gap:0;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;}
+.pipeline::-webkit-scrollbar{display:none;}
+.pipe-step{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.pipe-node{font-size:11px;padding:5px 10px;border-radius:6px;border:0.5px solid var(--border2);color:var(--text3);background:var(--bg2);white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.pipe-node.active{border-color:var(--green);color:var(--green);background:var(--green-bg);}
+.pipe-node.done{border-color:var(--text3);color:var(--text3);}
+.pipe-arrow{color:var(--text3);font-size:12px;margin:0 2px;}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;}
+.card-title{font-size:14px;font-weight:700;margin-bottom:12px;letter-spacing:-0.01em;}
+.card-sub{font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;}
+.mg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.metric{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:11px 13px;}
+.ml{font-size:10px;color:var(--text3);margin-bottom:3px;letter-spacing:.05em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;}
+.mv{font-size:21px;font-weight:700;line-height:1;letter-spacing:-0.02em;}
+.ms{font-size:10px;color:var(--text3);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+.idea-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:13px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;transition:border-color .15s;}
+.idea-card.selected{border-color:var(--green);background:rgba(0,230,118,0.04);}
+.idea-check{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:2px;transition:all .15s;}
+.idea-check.checked{background:var(--green);border-color:var(--green);color:#000;font-weight:700;}
+.idea-body{flex:1;min-width:0;}
+.idea-top{display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;}
+.semaforo{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.sem-green{background:var(--green);box-shadow:0 0 6px var(--green);}
+.sem-amber{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+.sem-red{background:var(--red);box-shadow:0 0 6px var(--red);}
+.idea-title{font-size:13px;font-weight:500;margin-bottom:3px;line-height:1.4;}
+.idea-angle{font-size:11px;color:var(--text2);margin-bottom:7px;line-height:1.5;}
+.bartrack{height:3px;border-radius:2px;background:var(--bg4);margin:3px 0 6px;}
+.barfill{height:100%;border-radius:2px;}
+.scorerow{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:7px;font-family:'JetBrains Mono',monospace;}
+.chips{display:flex;flex-wrap:wrap;gap:3px;}
+.sel-bar{background:var(--green-bg);border:0.5px solid var(--green);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.sel-bar.hidden{display:none;}
+.sel-info{font-size:13px;font-weight:600;color:var(--green);}
+.sel-sub{font-size:11px;color:var(--green);opacity:.7;margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.cl-item{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;}
+.cl-header{padding:13px 15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:0.5px solid var(--border);}
+.cl-header:hover{background:var(--bg3);}
+.cl-num{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-right:8px;flex-shrink:0;}
+.cl-title{font-size:13px;font-weight:600;flex:1;line-height:1.35;}
+.cl-status{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;margin-left:8px;flex-shrink:0;border:0.5px solid;font-family:'JetBrains Mono',monospace;}
+.status-listo{background:var(--blue-bg);color:var(--blue);border-color:var(--blue);}
+.status-publicado{background:var(--green-bg);color:var(--green);border-color:var(--green);}
+.cl-arrow{font-size:11px;color:var(--text3);margin-left:6px;transition:transform .2s;flex-shrink:0;}
+.cl-arrow.open{transform:rotate(180deg);}
+.cl-body{display:none;padding:15px;}
+.cl-body.open{display:block;}
+.cl-section{margin-bottom:14px;}
+.cl-section-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;}
+.hook-ab{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.hook-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;}
+.hook-ver{font-size:10px;font-weight:700;margin-bottom:4px;font-family:'JetBrains Mono',monospace;}
+.hook-ver.a{color:var(--blue);}
+.hook-ver.b{color:var(--purple);}
+.hook-txt{font-size:13px;line-height:1.5;color:var(--text);}
+.script-box{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px;font-size:12px;line-height:1.75;color:var(--text2);white-space:pre-wrap;font-family:'Space Grotesk',sans-serif;}
+.caption-box{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px;font-size:13px;line-height:1.6;color:var(--text2);}
+.prompt-box{background:var(--bg3);border:0.5px solid var(--amber);border-radius:var(--radius);padding:10px;font-size:11px;font-family:'JetBrains Mono',monospace;line-height:1.6;color:var(--amber);}
+.prompt-box.purple{border-color:var(--purple);color:var(--purple);}
+.img-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.img-slot{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;aspect-ratio:9/16;position:relative;display:flex;align-items:center;justify-content:center;}
+.img-slot img{width:100%;height:100%;object-fit:cover;}
+.img-placeholder{text-align:center;padding:16px;color:var(--text3);}
+.ip-icon{font-size:20px;margin-bottom:6px;}
+.ip-text{font-size:10px;font-family:'JetBrains Mono',monospace;line-height:1.5;}
+.img-loading{position:absolute;inset:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;}
+.img-spinner{width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.img-label{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);position:absolute;top:6px;left:6px;background:rgba(0,0,0,.7);padding:2px 5px;border-radius:4px;}
+.cl-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border);}
+.audit-form{display:flex;flex-direction:column;gap:0;}
+.audit-plat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.audit-plat-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:all .15s;}
+.audit-plat-card.selected{border-color:var(--green);background:var(--green-bg);}
+.audit-plat-card .apc-name{font-size:13px;font-weight:600;margin-bottom:3px;}
+.audit-plat-card .apc-sub{font-size:11px;color:var(--text2);}
+.audit-score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.ascore{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center;}
+.ascore-val{font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.ascore-val.good{color:var(--green);}
+.ascore-val.mid{color:var(--amber);}
+.ascore-val.bad{color:var(--red);}
+.ascore-label{font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em;}
+.audit-section{margin-bottom:16px;}
+.audit-section-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;}
+.audit-finding{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:var(--radius);margin-bottom:6px;}
+.af-critical{background:var(--red-bg);border:0.5px solid var(--red);}
+.af-warning{background:var(--amber-bg);border:0.5px solid var(--amber);}
+.af-good{background:var(--green-bg);border:0.5px solid var(--green);}
+.af-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.af-body{flex:1;}
+.af-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.af-desc{font-size:12px;line-height:1.55;opacity:.8;}
+.af-critical .af-title,.af-critical .af-desc{color:var(--red);}
+.af-warning .af-title,.af-warning .af-desc{color:var(--amber);}
+.af-good .af-title,.af-good .af-desc{color:var(--green);}
+.audit-loading{text-align:center;padding:36px 16px;}
+.al-spinner{width:36px;height:36px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
+.al-text{font-size:13px;font-family:'JetBrains Mono',monospace;color:var(--text2);}
+.al-sub{font-size:11px;color:var(--text3);margin-top:6px;}
+.score-ring{position:relative;width:80px;height:80px;margin:0 auto 10px;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.audit-recap{background:var(--bg3);border-radius:var(--radius);padding:14px;margin-bottom:14px;}
+.audit-recap-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-family:'JetBrains Mono',monospace;}
+.gen-toolbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;}
+.gen-sel{flex:1;min-width:110px;margin:0;}
+.content-item{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:8px;}
+.ci-header{padding:12px 14px;display:flex;align-items:center;cursor:pointer;border-bottom:0.5px solid var(--border);}
+.ci-header:hover{background:var(--bg3);}
+.ci-num{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-right:8px;flex-shrink:0;}
+.ci-title{font-size:13px;font-weight:500;flex:1;line-height:1.35;}
+.ci-arrow{font-size:11px;color:var(--text3);margin-left:6px;transition:transform .2s;flex-shrink:0;}
+.ci-arrow.open{transform:rotate(180deg);}
+.ci-body{display:none;padding:14px;}
+.ci-body.open{display:block;}
+.gen-loading{text-align:center;padding:40px 20px;color:var(--text3);}
+.gl-icon{font-size:28px;margin-bottom:10px;animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+.gen-empty{text-align:center;padding:44px 20px;}
+.ge-icon{font-size:36px;margin-bottom:14px;opacity:.35;}
+.ge-title{font-size:15px;font-weight:600;margin-bottom:7px;}
+.ge-sub{font-size:12px;color:var(--text2);line-height:1.6;}
+.action{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 13px;margin-bottom:7px;display:flex;gap:11px;}
+.action.high{border-left:2px solid var(--red);}
+.action.medium{border-left:2px solid var(--amber);}
+.action.low{border-left:2px solid var(--text3);}
+.abody{flex:1;}
+.atitle{font-size:13px;font-weight:500;margin-bottom:3px;line-height:1.4;}
+.areason{font-size:11px;color:var(--text2);line-height:1.5;}
+.ameta{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;}
+.chk{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:1px;transition:all .15s;}
+.chk.done{background:var(--green);border-color:var(--green);color:#000;font-weight:700;}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;letter-spacing:.02em;border:0.5px solid;}
+.bh{background:var(--red-bg);color:var(--red);border-color:var(--red);}
+.bm{background:var(--amber-bg);color:var(--amber);border-color:var(--amber);}
+.bl{color:var(--text3);border-color:var(--text3);background:transparent;}
+.bi{background:var(--blue-bg);color:var(--blue);border-color:var(--blue);}
+.bv{background:var(--purple-bg);color:var(--purple);border-color:var(--purple);}
+.bg{background:var(--green-bg);color:var(--green);border-color:var(--green);}
+.btk{color:var(--text);border-color:var(--border2);background:var(--bg3);}
+.big{color:#e1306c;border-color:#e1306c;background:rgba(225,48,108,.08);}
+.bfb{color:#1877F2;border-color:#1877F2;background:rgba(24,119,242,.08);}
+.bli{color:#0A66C2;border-color:#0A66C2;background:rgba(10,102,194,.08);}
+.bnb{color:var(--cyan);border-color:var(--cyan);background:var(--cyan-bg);}
+.insight{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:0.5px solid var(--border);}
+.insight:last-child{border-bottom:none;}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px;}
+.dg{background:var(--green);}.da{background:var(--amber);}.dr{background:var(--red);}.dc{background:var(--cyan);}
+.itext{font-size:12px;line-height:1.6;color:var(--text2);}
+.itext strong{color:var(--text);}
+.ab-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:13px;margin-bottom:9px;}
+.ab-vs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0;}
+.abv{border:0.5px solid var(--border);border-radius:var(--radius);padding:9px;}
+.abv.win{border-color:var(--green);background:var(--green-bg);}
+.abv.lose{opacity:.45;}
+.abvl{font-size:10px;font-weight:700;margin-bottom:3px;font-family:'JetBrains Mono',monospace;}
+.abvt{font-size:12px;line-height:1.4;color:var(--text2);}
+.abvs{font-size:10px;color:var(--text3);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+.abvs.w{color:var(--green);font-weight:700;}
+.rrow{display:flex;gap:9px;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);}
+.rrow:last-child{border-bottom:none;}
+.rpill{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;flex-shrink:0;border:0.5px solid;font-family:'JetBrains Mono',monospace;}
+.rw{background:var(--green-bg);color:var(--green);border-color:var(--green);}
+.ro{background:var(--amber-bg);color:var(--amber);border-color:var(--amber);}
+.rl{background:var(--red-bg);color:var(--red);border-color:var(--red);}
+.freq-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.fitem{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:9px 11px;}
+.fplat{font-size:10px;color:var(--text3);margin-bottom:2px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.04em;}
+.fval{font-size:13px;font-weight:700;color:var(--green);}
+.ftipo{font-size:10px;color:var(--text3);margin-top:2px;}
+.fbar{display:flex;gap:5px;overflow-x:auto;padding-bottom:9px;scrollbar-width:none;}
+.fbar::-webkit-scrollbar{display:none;}
+.fchip{flex-shrink:0;padding:5px 11px;border:0.5px solid var(--border2);border-radius:6px;font-size:12px;cursor:pointer;background:transparent;color:var(--text2);font-family:'Space Grotesk',sans-serif;}
+.fchip.active{background:var(--bg3);color:var(--text);border-color:var(--text);}
+.countdown{border:0.5px solid var(--red);background:var(--red-bg);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.countdown.ok{border-color:var(--green);background:var(--green-bg);}
+.cd-label{font-size:12px;font-weight:600;color:var(--red);}
+.countdown.ok .cd-label{color:var(--green);}
+.cd-sub{font-size:11px;color:var(--red);opacity:.7;margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.countdown.ok .cd-sub{color:var(--green);}
+.cd-num{font-size:30px;font-weight:700;color:var(--red);letter-spacing:-0.04em;font-family:'JetBrains Mono',monospace;}
+.countdown.ok .cd-num{color:var(--green);}
+input,select,textarea{width:100%;border:0.5px solid var(--border2);border-radius:var(--radius);padding:9px 11px;font-size:14px;background:var(--bg3);color:var(--text);margin-bottom:9px;font-family:'Space Grotesk',sans-serif;-webkit-appearance:none;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);}
+select option{background:var(--bg3);}
+textarea{resize:vertical;min-height:70px;}
+.btn{padding:9px 14px;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:13px;cursor:pointer;background:var(--bg3);color:var(--text);font-family:'Space Grotesk',sans-serif;font-weight:500;transition:all .15s;}
+.btn:hover{background:var(--bg4);}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-green{background:var(--green);color:#000;border-color:var(--green-dim);font-weight:700;}
+.btn-green:hover{background:var(--green-dim);}
+.btn-cyan{background:var(--cyan);color:#000;border-color:var(--cyan);font-weight:700;}
+.btn-cyan:hover{opacity:.85;}
+.btn-full{width:100%;margin-top:4px;}
+.btn-sm{padding:6px 11px;font-size:12px;}
+.btn-outline{background:transparent;border-color:var(--green);color:var(--green);}
+.btn-outline-purple{background:transparent;border-color:var(--purple);color:var(--purple);}
+.btn-outline-cyan{background:transparent;border-color:var(--cyan);color:var(--cyan);}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;z-index:200;backdrop-filter:blur(4px);}
+.modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:18px 18px 0 0;padding:18px 15px 38px;width:100%;max-height:90vh;overflow-y:auto;}
+.mhandle{width:38px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 14px;}
+.mtitle{font-size:15px;font-weight:700;margin-bottom:14px;letter-spacing:-0.01em;}
+.mactions{display:flex;gap:7px;margin-top:5px;}
+.mhidden{display:none;}
+.apikey-banner{border:0.5px solid var(--amber);background:var(--amber-bg);border-radius:var(--radius);padding:10px 13px;margin-bottom:9px;font-size:12px;color:var(--amber);line-height:1.6;}
+.apikey-banner.purple{border-color:var(--purple);background:var(--purple-bg);color:var(--purple);}
+.apikey-banner.cyan{border-color:var(--cyan);background:var(--cyan-bg);color:var(--cyan);}
+.fab{position:fixed;bottom:18px;right:14px;width:50px;height:50px;background:var(--green);border-radius:50%;border:none;color:#000;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:100;box-shadow:0 4px 20px rgba(0,230,118,.35);font-weight:700;}
+.fab:active{transform:scale(.91);}
+.rsb{display:flex;align-items:center;justify-content:space-between;}
+.row{display:flex;align-items:center;gap:7px;}
+.muted{font-size:12px;color:var(--text2);}
+.muted2{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+.divider{border:none;border-top:0.5px solid var(--border);margin:11px 0;}
+.empty{text-align:center;padding:26px 14px;color:var(--text3);font-size:12px;}
+.slabel{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 7px;font-family:'JetBrains Mono',monospace;}
+strong{font-weight:600;}
+
+/* ── NANOBANANA ENGINE ─────────────────────────────────────────────── */
+.nb-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:20px;background:var(--cyan-bg);color:var(--cyan);border:0.5px solid var(--cyan);font-family:'JetBrains Mono',monospace;font-weight:700;}
+.engine-switch{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.engine-btn{padding:10px 12px;border:0.5px solid var(--border);border-radius:var(--radius);cursor:pointer;text-align:center;background:var(--bg3);transition:all .15s;}
+.engine-btn.active{border-color:var(--cyan);background:var(--cyan-bg);}
+.engine-btn.active.std{border-color:var(--green);background:var(--green-bg);}
+.engine-name{font-size:12px;font-weight:700;margin-bottom:2px;}
+.engine-desc{font-size:10px;color:var(--text3);}
+.nb-status{font-size:11px;font-family:'JetBrains Mono',monospace;padding:6px 10px;border-radius:6px;margin-bottom:8px;}
+.nb-status.ok{background:var(--cyan-bg);color:var(--cyan);border:0.5px solid var(--cyan);}
+.nb-status.err{background:var(--red-bg);color:var(--red);border:0.5px solid var(--red);}
+.nb-status.warn{background:var(--amber-bg);color:var(--amber);border:0.5px solid var(--amber);}
+.nb-preview{background:var(--bg3);border:0.5px solid var(--cyan);border-radius:var(--radius);overflow:hidden;margin-top:8px;}
+.nb-preview img,.nb-preview video{width:100%;display:block;border-radius:var(--radius);}
+.nb-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;gap:10px;}
+.nb-spin{width:28px;height:28px;border:2px solid var(--cyan-bg);border-top-color:var(--cyan);border-radius:50%;animation:spin .7s linear infinite;}
+.nb-label{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--cyan);}
+
+/* ── VIDEO MEJORADO ───────────────────────────────────────────────── */
+.video-phone{width:100%;max-width:220px;margin:0 auto 14px;display:block;aspect-ratio:9/16;background:var(--bg4);border-radius:16px;overflow:hidden;position:relative;border:0.5px solid var(--border2);}
+.video-phone canvas{width:100%;height:100%;display:block;}
+.video-progress{background:var(--bg4);border-radius:4px;height:4px;margin:10px 0;}
+.video-progress-fill{height:100%;background:var(--green);border-radius:4px;transition:width .15s;}
+.video-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.video-status{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:6px;text-align:center;min-height:16px;}
+.scene-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:6px;display:flex;gap:10px;align-items:flex-start;}
+.scene-num{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:2px;flex-shrink:0;}
+.scene-text{font-size:13px;font-weight:600;margin-bottom:3px;flex:1;}
+.scene-sub{font-size:11px;color:var(--text2);}
+.scene-emoji{font-size:20px;flex-shrink:0;}
+.vid-engine-row{display:flex;align-items:center;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
+
+/* ── PUBLICACIÓN ──────────────────────────────────────────────────── */
+.pub-plat{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;}
+.pub-plat-btn{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center;cursor:pointer;transition:all .15s;}
+.pub-plat-btn.active{border-color:var(--green);background:var(--green-bg);}
+.pub-plat-btn .ppb-name{font-size:12px;font-weight:700;margin-bottom:2px;}
+.pub-plat-btn .ppb-sub{font-size:10px;color:var(--text3);}
+.pub-content-box{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px;}
+.pub-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.pub-text{font-size:13px;line-height:1.6;color:var(--text);}
+.pub-hashtags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.pub-hashtag{font-size:11px;padding:2px 8px;background:var(--blue-bg);color:var(--blue);border:0.5px solid var(--blue);border-radius:20px;font-family:'JetBrains Mono',monospace;}
+.pub-estado{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:700;font-family:'JetBrains Mono',monospace;border:0.5px solid;}
+.pub-pendiente{background:var(--amber-bg);color:var(--amber);border-color:var(--amber);}
+.pub-listo{background:var(--blue-bg);color:var(--blue);border-color:var(--blue);}
+.pub-publicado{background:var(--green-bg);color:var(--green);border-color:var(--green);}
+.pub-item{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:8px;overflow:hidden;}
+.pub-item-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.pub-item-header:hover{background:var(--bg3);}
+.pub-item-body{display:none;padding:14px;border-top:0.5px solid var(--border);}
+.pub-item-body.open{display:block;}
+
+/* ── INSIGHTS / RESULTADOS ────────────────────────────────────────── */
+.res-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;}
+.res-kpi{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center;}
+.res-kpi-val{font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.res-kpi-lbl{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.04em;}
+.res-mini-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;}
+.res-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.res-bar-label{font-size:11px;color:var(--text2);width:80px;flex-shrink:0;font-family:'JetBrains Mono',monospace;}
+.res-bar-track{flex:1;height:7px;background:var(--bg4);border-radius:4px;overflow:hidden;}
+.res-bar-fill{height:100%;border-radius:4px;background:var(--green);transition:width .4s;}
+.res-bar-val{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;min-width:44px;text-align:right;}
+.recom-card{background:var(--bg3);border-left:3px solid var(--green);border-radius:0 var(--radius) var(--radius) 0;padding:10px 13px;margin-bottom:7px;}
+.recom-card.amber{border-left-color:var(--amber);}
+.recom-card.red{border-left-color:var(--red);}
+.recom-card.cyan{border-left-color:var(--cyan);}
+.recom-title{font-size:13px;font-weight:600;margin-bottom:3px;}
+.recom-body{font-size:12px;color:var(--text2);line-height:1.55;}
+/* Insight cards grandes */
+.insight-big{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 15px;margin-bottom:8px;}
+.ib-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.ib-icon{font-size:22px;}
+.ib-title{font-size:14px;font-weight:700;}
+.ib-body{font-size:12px;color:var(--text2);line-height:1.6;}
+.ib-score{font-size:24px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-bottom:2px;}
+.ib-score.green{color:var(--green);}
+.ib-score.amber{color:var(--amber);}
+.ib-score.red{color:var(--red);}
+/* Score pill */
+.score-pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.sp-high{background:var(--green-bg);color:var(--green);border:0.5px solid var(--green);}
+.sp-mid{background:var(--amber-bg);color:var(--amber);border:0.5px solid var(--amber);}
+.sp-low{background:var(--red-bg);color:var(--red);border:0.5px solid var(--red);}
+/* Clone banner */
+.clone-banner{background:var(--cyan-bg);border:0.5px solid var(--cyan);border-radius:var(--radius);padding:9px 12px;display:flex;align-items:center;gap:8px;margin-top:10px;}
+.clone-icon{font-size:16px;}
+.clone-text{font-size:12px;color:var(--cyan);flex:1;line-height:1.4;}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">🧪</div>
+      <div><div class="logo-name">Laboratorio de Crecimiento</div><div class="logo-sub">Daniel · v6.0 · <span class="nb-badge">🍌 NanoBanana</span></div></div>
+    </div>
+    <span class="hbadge" id="hgoal">MODO AGRESIVO</span>
+  </div>
+  <div class="prog-row">
+    <div class="prog-track"><div class="prog-fill" id="pfill"></div></div>
+    <span class="prog-label" id="plabel"></span>
+  </div>
+  <div class="plat-pills" id="platPills"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="goTab('ideas')">💡 Ideas</button>
+    <button class="tab" onclick="goTab('listo')">✅ Listo<span class="tab-badge" id="badgeListo" style="display:none">0</span></button>
+    <button class="tab" onclick="goTab('generador')">⚡ Generador</button>
+    <button class="tab" onclick="goTab('video')">🎬 Video</button>
+    <button class="tab" onclick="goTab('publicacion')">📤 Publicación</button>
+    <button class="tab" onclick="goTab('insights')">💡 Insights</button>
+    <button class="tab" onclick="goTab('resultados')">📊 Resultados</button>
+    <button class="tab" onclick="goTab('auditoria')">🔍 Auditoría</button>
+    <button class="tab" onclick="goTab('hoy')">📋 Hoy</button>
+    <button class="tab" onclick="goTab('motor')">📈 Motor</button>
+    <button class="tab" onclick="goTab('ia')">🧠 IA</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ════════ IDEAS ════════ -->
+<div id="tab-ideas" class="section active">
+  <div class="pipeline">
+    <div class="pipe-step"><div class="pipe-node active">1 · IDEAS</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node">2 · SELECCIÓN</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node">3 · GENERACIÓN</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node">4 · LISTO</div></div>
+  </div>
+  <div class="fbar">
+    <button class="fchip active" onclick="setFiltro('all',this)">Todas</button>
+    <button class="fchip" onclick="setFiltro('viral',this)">Viral</button>
+    <button class="fchip" onclick="setFiltro('ia',this)">IA</button>
+    <button class="fchip" onclick="setFiltro('negocios',this)">Negocios</button>
+    <button class="fchip" onclick="setFiltro('autoridad',this)">Autoridad</button>
+    <button class="fchip" onclick="setFiltro('conversion',this)">Conversión</button>
+  </div>
+  <div class="sel-bar hidden" id="selBar">
+    <div>
+      <div class="sel-info" id="selInfo">0 ideas seleccionadas</div>
+      <div class="sel-sub">Listas para generar contenido</div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm" onclick="deseleccionarTodo()">Limpiar</button>
+      <button class="btn btn-sm btn-green" id="btnGenSel" onclick="generarDeSeleccionadas()">⚡ Generar contenido</button>
+    </div>
+  </div>
+  <div id="ideasList"></div>
+</div>
+
+<!-- ════════ CONTENIDO LISTO ════════ -->
+<div id="tab-listo" class="section">
+  <div class="pipeline">
+    <div class="pipe-step"><div class="pipe-node done">1 · IDEAS</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node done">2 · SELECCIÓN</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node done">3 · GENERACIÓN</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node active">4 · LISTO</div></div>
+  </div>
+  <div id="listoContainer">
+    <div class="gen-empty"><div class="ge-icon">✅</div><div class="ge-title">Sin contenido generado aún</div><div class="ge-sub">Ve a Ideas, selecciona las que quieres desarrollar y presiona "Generar contenido".</div></div>
+  </div>
+</div>
+
+<!-- ════════ GENERADOR ════════ -->
+<div id="tab-generador" class="section">
+  <div class="card">
+    <div class="card-title">Generador Masivo de Contenido</div>
+    <div class="card-sub">Genera guiones, hooks A/B, captions y prompts visuales en un solo clic.</div>
+
+    <div class="slabel">APIs activas</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:10px">
+      <div style="background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:9px 11px;">
+        <div class="muted2">Anthropic</div>
+        <div id="anthropicStatus" style="font-size:12px;margin-top:3px;color:var(--text3)">No configurada</div>
+      </div>
+      <div style="background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:9px 11px;">
+        <div class="muted2">OpenAI</div>
+        <div id="openaiStatus" style="font-size:12px;margin-top:3px;color:var(--text3)">No configurada</div>
+      </div>
+      <div style="background:var(--bg3);border:0.5px solid var(--cyan);border-radius:var(--radius);padding:9px 11px;">
+        <div class="muted2" style="color:var(--cyan)">NanoBanana</div>
+        <div id="nbStatus" style="font-size:12px;margin-top:3px;color:var(--text3)">No configurada</div>
+      </div>
+    </div>
+
+    <div class="slabel">Clave Anthropic</div>
+    <div class="apikey-banner">Obtén tu clave en <strong>console.anthropic.com</strong> → API Keys</div>
+    <div style="display:flex;gap:7px">
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="margin:0;flex:1">
+      <button class="btn btn-green btn-sm" onclick="guardarKey()">Activar</button>
+    </div>
+    <div id="keyStatus" class="muted2" style="margin-top:5px;min-height:16px"></div>
+
+    <div class="slabel" style="margin-top:12px">Clave OpenAI (imágenes DALL-E 3)</div>
+    <div class="apikey-banner purple">Obtén tu clave en <strong>platform.openai.com</strong> → API Keys</div>
+    <div style="display:flex;gap:7px">
+      <input type="password" id="openaiKeyInput" placeholder="sk-proj-..." style="margin:0;flex:1">
+      <button class="btn btn-outline-purple btn-sm" onclick="guardarOpenAIKey()">Activar</button>
+    </div>
+    <div id="openaiKeyStatus" class="muted2" style="margin-top:5px;min-height:16px"></div>
+
+    <div class="slabel" style="margin-top:12px">🍌 Clave NanoBanana (visual avanzado)</div>
+    <div class="apikey-banner cyan">Motor visual premium. Genera imágenes y videos de alta calidad. Obtén acceso en <strong>nanobanana.ai</strong></div>
+    <div style="display:flex;gap:7px">
+      <input type="password" id="nbKeyInput" placeholder="nb-..." style="margin:0;flex:1">
+      <button class="btn btn-cyan btn-sm" onclick="guardarNbKey()">Activar</button>
+    </div>
+    <div id="nbKeyStatus" class="muted2" style="margin-top:5px;min-height:16px"></div>
+
+    <div class="divider"></div>
+    <div class="gen-toolbar">
+      <select id="genPlat" class="gen-sel"><option value="todas">Todas las plataformas</option><option value="TikTok">TikTok</option><option value="Instagram">Instagram</option><option value="Facebook">Facebook</option><option value="LinkedIn">LinkedIn</option></select>
+      <select id="genTipo" class="gen-sel"><option value="mixto">Tipos mixtos</option><option value="viral">Solo viral</option><option value="autoridad">Solo autoridad</option><option value="conversion">Solo conversión</option><option value="ia">Sobre IA</option><option value="negocios">Sobre negocios</option></select>
+      <select id="genCantidad" style="width:110px;margin:0"><option value="5">5 piezas</option><option value="10" selected>10 piezas</option></select>
+    </div>
+    <div style="display:flex;gap:7px">
+      <button class="btn btn-green" style="flex:1" onclick="generarLote()" id="btnGenerar">⚡ Generar lote diario</button>
+      <button class="btn btn-sm" onclick="limpiarBatch()">Limpiar</button>
+    </div>
+  </div>
+  <div id="batchContainer">
+    <div class="gen-empty"><div class="ge-icon">⚡</div><div class="ge-title">Listo para generar</div><div class="ge-sub">Configura tus APIs arriba y presiona "Generar lote diario".</div></div>
+  </div>
+</div>
+
+<!-- ════════ VIDEO ════════ -->
+<div id="tab-video" class="section">
+  <div class="card">
+    <div class="rsb" style="margin-bottom:10px">
+      <div class="card-title" style="margin:0">🎬 Generador de Video</div>
+      <span class="nb-badge" id="vidEngineBadge">🍌 NanoBanana</span>
+    </div>
+    <div class="card-sub">Video vertical 9:16 con escenas dinámicas, texto estilo TikTok y transiciones. 15–30 segundos listo para publicar.</div>
+
+    <div class="slabel">Motor de generación</div>
+    <div class="engine-switch">
+      <div class="engine-btn std active" id="engBtnStd" onclick="setVideoEngine('standard')">
+        <div class="engine-name" style="color:var(--green)">⚡ Estándar</div>
+        <div class="engine-desc">Rápido · Canvas interno · Sin API extra</div>
+      </div>
+      <div class="engine-btn" id="engBtnNb" onclick="setVideoEngine('nanobanana')">
+        <div class="engine-name" style="color:var(--cyan)">🍌 NanoBanana</div>
+        <div class="engine-desc">Alta calidad · Requiere API key</div>
+      </div>
+    </div>
+    <div id="vidEngineStatus" class="nb-status warn">⚡ Motor estándar activo — rápido y sin dependencias externas.</div>
+
+    <div class="slabel">Seleccionar contenido</div>
+    <select id="videoSelectContent" onchange="onVideoSelectChange()">
+      <option value="">— Selecciona una pieza —</option>
+    </select>
+
+    <div id="videoScenePreview" style="display:none">
+      <div class="slabel" style="margin-top:4px">Escenas (3–6)</div>
+      <div id="videoSceneList"></div>
+      <div class="slabel">Preview 9:16</div>
+      <div class="video-phone" id="videoPhone">
+        <canvas id="videoCanvas" width="405" height="720"></canvas>
+      </div>
+      <div class="video-progress"><div class="video-progress-fill" id="videoProgressFill" style="width:0%"></div></div>
+      <div class="video-status" id="videoStatus">Listo para generar</div>
+      <div class="video-actions">
+        <button class="btn btn-green" style="flex:1" id="btnGenerarVideo" onclick="generarVideo()">🎬 Generar video</button>
+        <button class="btn btn-outline" id="btnDescargarVideo" onclick="descargarVideo()" style="display:none">⬇ Descargar .webm</button>
+      </div>
+      <div id="nbVideoPreview" style="display:none">
+        <div class="slabel">Preview NanoBanana</div>
+        <div class="nb-preview" id="nbVidContainer"></div>
+      </div>
+    </div>
+    <div id="videoEmpty" style="text-align:center;padding:30px 14px;color:var(--text3)">
+      <div style="font-size:30px;margin-bottom:8px">🎬</div>
+      <div style="font-size:13px">Genera contenido primero en la pestaña Ideas o Generador</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ PUBLICACIÓN ════════ -->
+<div id="tab-publicacion" class="section">
+  <div class="card">
+    <div class="rsb" style="margin-bottom:4px">
+      <div class="card-title" style="margin:0">📤 Módulo Publicación</div>
+      <select id="pubFiltroEstado" onchange="renderPublicacion()" style="width:auto;margin:0;padding:5px 9px;font-size:12px">
+        <option value="todos">Todos</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="listo">Listo</option>
+        <option value="publicado">Publicado</option>
+      </select>
+    </div>
+    <div class="card-sub">Prepara la publicación manual. Texto, hashtags y assets listos. No publicación automática.</div>
+  </div>
+  <div id="pubContainer">
+    <div class="gen-empty"><div class="ge-icon">📤</div><div class="ge-title">Sin contenido aún</div><div class="ge-sub">Genera contenido primero en la pestaña Ideas.</div></div>
+  </div>
+</div>
+
+<!-- ════════ INSIGHTS ════════ -->
+<div id="tab-insights" class="section">
+  <div class="card">
+    <div class="rsb" style="margin-bottom:4px">
+      <div class="card-title" style="margin:0">💡 Centro de Insights</div>
+      <span class="score-pill sp-high" id="insightScore">—</span>
+    </div>
+    <div class="card-sub">El sistema analiza tus datos y te dice exactamente qué funciona, qué no, y qué repetir.</div>
+  </div>
+  <div id="insightCards">
+    <div class="gen-empty"><div class="ge-icon">💡</div><div class="ge-title">Sin datos suficientes</div><div class="ge-sub">Registra resultados de tus publicaciones para activar el sistema de aprendizaje.</div></div>
+  </div>
+
+  <div class="card" id="insightHooksCard" style="display:none">
+    <div class="card-title">🎣 Mejores Hooks detectados</div>
+    <div id="insightHooksList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔁 Contenido para repetir</div>
+    <div id="insightRepetir">
+      <div class="empty">Registra al menos 3 resultados para ver qué repetir.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">❌ Qué evitar</div>
+    <div id="insightEvitar">
+      <div class="empty">Registra al menos 3 resultados para ver qué evitar.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 Mejores días/horarios detectados</div>
+    <div id="insightHorarios">
+      <div class="empty">Registra al menos 5 resultados con fechas para ver patrones de horario.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ RESULTADOS ════════ -->
+<div id="tab-resultados" class="section">
+  <div class="card">
+    <div class="card-title">📊 Resultados & Aprendizaje</div>
+    <div class="card-sub">Registra métricas reales. El sistema aprende, puntúa contenido y prioriza lo que funciona.</div>
+    <div class="res-kpi-grid">
+      <div class="res-kpi"><div class="res-kpi-val" id="resKpiTotal">0</div><div class="res-kpi-lbl">Publicaciones</div></div>
+      <div class="res-kpi"><div class="res-kpi-val" id="resKpiVistas">0</div><div class="res-kpi-lbl">Vistas</div></div>
+      <div class="res-kpi"><div class="res-kpi-val" id="resKpiLikes">0</div><div class="res-kpi-lbl">Likes</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Registrar métricas</div>
+    <select id="resSelectContent">
+      <option value="">— Selecciona pieza —</option>
+    </select>
+    <div class="res-mini-grid">
+      <div><div class="muted2" style="margin-bottom:3px">👁 Vistas</div><input type="number" id="resVistas" placeholder="3200" inputmode="numeric" style="margin:0"></div>
+      <div><div class="muted2" style="margin-bottom:3px">❤️ Likes</div><input type="number" id="resLikes" placeholder="140" inputmode="numeric" style="margin:0"></div>
+      <div><div class="muted2" style="margin-bottom:3px">💬 Coments</div><input type="number" id="resComents" placeholder="25" inputmode="numeric" style="margin:0"></div>
+      <div><div class="muted2" style="margin-bottom:3px">🔖 Guardados</div><input type="number" id="resGuardados" placeholder="10" inputmode="numeric" style="margin:0"></div>
+    </div>
+    <div style="margin-top:8px">
+      <input id="resAprendizaje" placeholder="¿Qué aprendiste? (opcional)" style="margin-bottom:6px">
+      <button class="btn btn-green btn-full" onclick="guardarMetrica()">💾 Guardar métricas</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="rsb" style="margin-bottom:10px">
+      <span class="card-title" style="margin:0">Rendimiento por plataforma</span>
+    </div>
+    <div id="resPlatBars"><div class="empty">Sin datos aún.</div></div>
+  </div>
+
+  <div class="card">
+    <div class="rsb" style="margin-bottom:10px">
+      <span class="card-title" style="margin:0">Rendimiento por tipo</span>
+    </div>
+    <div id="resTipoBars"><div class="empty">Sin datos aún.</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Recomendaciones del sistema</div>
+    <div id="resRecomendaciones"><div class="empty">Registra al menos 2 resultados.</div></div>
+  </div>
+
+  <div class="card">
+    <div class="rsb" style="margin-bottom:10px">
+      <span class="card-title" style="margin:0">Historial completo</span>
+      <button class="btn btn-sm" onclick="limpiarMetricas()">Limpiar</button>
+    </div>
+    <div id="resHistorial"><div class="empty">Sin métricas aún.</div></div>
+  </div>
+</div>
+
+<!-- ════════ AUDITORÍA ════════ -->
+<div id="tab-auditoria" class="section">
+  <div id="auditForm">
+    <div class="card">
+      <div class="card-title">Auditoría de Redes Sociales</div>
+      <div class="card-sub">Diagnóstico completo con IA. Ingresa los datos de tu perfil y el sistema detecta errores, oportunidades y te da un plan de acción.</div>
+      <div class="slabel">Plataforma a auditar</div>
+      <div class="audit-plat-grid" id="auditPlatGrid">
+        <div class="audit-plat-card selected" onclick="selAuditPlat('Facebook',this)"><div class="apc-name" style="color:#1877F2">Facebook</div><div class="apc-sub">Plataforma principal</div></div>
+        <div class="audit-plat-card" onclick="selAuditPlat('Instagram',this)"><div class="apc-name" style="color:#e1306c">Instagram</div><div class="apc-sub">Motor viral</div></div>
+        <div class="audit-plat-card" onclick="selAuditPlat('TikTok',this)"><div class="apc-name">TikTok</div><div class="apc-sub">Crecimiento explosivo</div></div>
+        <div class="audit-plat-card" onclick="selAuditPlat('LinkedIn',this)"><div class="apc-name" style="color:#0A66C2">LinkedIn</div><div class="apc-sub">Autoridad y conversión</div></div>
+      </div>
+      <div class="slabel">Datos de tu perfil</div>
+      <input id="auditUsuario" placeholder="Tu usuario o nombre de perfil">
+      <input type="number" id="auditSeguidores" placeholder="Seguidores actuales" inputmode="numeric">
+      <input type="number" id="auditPublicaciones" placeholder="Publicaciones en los últimos 30 días" inputmode="numeric">
+      <input type="number" id="auditLikes" placeholder="Likes promedio por publicación" inputmode="numeric">
+      <input type="number" id="auditComentarios" placeholder="Comentarios promedio por publicación" inputmode="numeric">
+      <div class="slabel">Tipo de contenido que publicas</div>
+      <select id="auditTipoContenido">
+        <option value="mixto">Mixto (varios tipos)</option>
+        <option value="educativo">Principalmente educativo</option>
+        <option value="viral">Principalmente viral/entretenimiento</option>
+        <option value="personal">Historia personal/lifestyle</option>
+        <option value="ventas">Orientado a ventas</option>
+      </select>
+      <div class="slabel">¿Tienes estrategia definida?</div>
+      <select id="auditEstrategia">
+        <option value="ninguna">No tengo estrategia clara</option>
+        <option value="basica">Tengo una idea básica</option>
+        <option value="definida">Tengo estrategia definida</option>
+      </select>
+      <textarea id="auditNotas" placeholder="Cuéntame más sobre tu perfil, qué problemas tienes, qué has probado... (opcional)"></textarea>
+      <button class="btn btn-green btn-full" onclick="ejecutarAuditoria()" id="btnAudit">🔍 Ejecutar Auditoría con IA</button>
+    </div>
+  </div>
+  <div id="auditResultado" style="display:none"></div>
+</div>
+
+<!-- ════════ HOY ════════ -->
+<div id="tab-hoy" class="section">
+  <div id="cdBanner"></div>
+  <div class="mg2">
+    <div class="metric"><div class="ml">Total</div><div class="mv" id="segTotal">—</div><div class="ms">seguidores</div></div>
+    <div class="metric"><div class="ml">Faltan</div><div class="mv" style="color:var(--red)" id="segFaltan">—</div><div class="ms">para 5.000</div></div>
+    <div class="metric"><div class="ml">Ritmo</div><div class="mv" id="ritmoHoy">—</div><div class="ms" id="ritmoEst"></div></div>
+    <div class="metric"><div class="ml">Necesitas</div><div class="mv" style="color:var(--green)" id="ritmoNec">—</div><div class="ms">por día</div></div>
+  </div>
+  <div class="card">
+    <div class="rsb" style="margin-bottom:11px"><span class="card-title" style="margin:0">Plan de hoy</span><span class="muted2" id="fechaHoy"></span></div>
+    <div id="accionesList"></div>
+    <div class="divider"></div>
+    <div class="rsb"><span class="muted2">Completadas</span><span style="font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace" id="compCount">0/0</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Actualizar seguidores</div>
+    <div class="mg2" style="margin-bottom:7px">
+      <div><div class="muted2" style="margin-bottom:3px;color:#1877F2">Facebook</div><input type="number" id="inFb" placeholder="ej: 420" inputmode="numeric"></div>
+      <div><div class="muted2" style="margin-bottom:3px;color:#e1306c">Instagram</div><input type="number" id="inIg" placeholder="ej: 180" inputmode="numeric"></div>
+      <div><div class="muted2" style="margin-bottom:3px">TikTok</div><input type="number" id="inTk" placeholder="ej: 90" inputmode="numeric"></div>
+      <div><div class="muted2" style="margin-bottom:3px;color:#0A66C2">LinkedIn</div><input type="number" id="inLi" placeholder="ej: 55" inputmode="numeric"></div>
+    </div>
+    <input type="number" id="inRitmo" placeholder="Crecimiento total de hoy (+/-)" inputmode="numeric">
+    <button class="btn btn-green btn-full" onclick="guardarSeg()">Guardar progreso</button>
+  </div>
+</div>
+
+<!-- ════════ MOTOR ════════ -->
+<div id="tab-motor" class="section">
+  <div class="card"><div class="card-title">Diagnóstico en tiempo real</div><div id="diagList"></div></div>
+  <div class="card"><div class="card-title">Frecuencia óptima</div><div class="freq-grid" id="freqGrid"></div></div>
+  <div class="card"><div class="card-title">Hoja de ruta — 30 días</div>
+    <div class="insight"><div class="dot dg"></div><div class="itext"><strong>Semana 1:</strong> Máximo volumen. Usa el generador para 10 piezas/día. Publica todo, detecta qué rompe.</div></div>
+    <div class="insight"><div class="dot da"></div><div class="itext"><strong>Semana 2:</strong> Duplicar los 2-3 formatos ganadores. 3 variantes de cada uno. Cero improvisación.</div></div>
+    <div class="insight"><div class="dot da"></div><div class="itext"><strong>Semana 3:</strong> Reutilización cruzada. TikTok → Reel + clip Facebook + reflexión LinkedIn.</div></div>
+    <div class="insight"><div class="dot dr"></div><div class="itext"><strong>Semana 4:</strong> Sprint final. Colaboraciones, alto impacto, CTAs directos.</div></div>
+  </div>
+</div>
+
+<!-- ════════ IA ════════ -->
+<div id="tab-ia" class="section">
+  <div class="card"><div class="card-title">Patrones detectados</div><div id="patronesList"></div></div>
+  <div class="card">
+    <div class="rsb" style="margin-bottom:11px">
+      <span class="card-title" style="margin:0">Historial</span>
+      <button class="btn btn-sm btn-green" onclick="openModal('mResultado')">+ Registrar</button>
+    </div>
+    <div id="historialList"></div>
+  </div>
+</div>
+
+</div><!-- end content -->
+<button class="fab" id="fab" onclick="fabClick()" style="display:none">+</button>
+</div>
+
+<!-- ════════ MODALES ════════ -->
+<div id="mAb" class="modal-overlay mhidden">
+  <div class="modal">
+    <div class="mhandle"></div><div class="mtitle">Nuevo experimento A/B</div>
+    <input id="abVar" placeholder="¿Qué estás probando?">
+    <input id="abVa" placeholder="Versión A"><input id="abVb" placeholder="Versión B">
+    <select id="abPlat"><option>TikTok</option><option>Instagram</option><option>Facebook</option><option>LinkedIn</option></select>
+    <select id="abTipo"><option value="hook">Hook</option><option value="formato">Formato</option><option value="cta">CTA</option><option value="hora">Hora</option><option value="tema">Tema</option></select>
+    <div class="mactions"><button class="btn" style="flex:1" onclick="closeModal('mAb')">Cancelar</button><button class="btn btn-green" style="flex:2" onclick="crearExp()">Crear</button></div>
+  </div>
+</div>
+<div id="mCerrar" class="modal-overlay mhidden">
+  <div class="modal">
+    <div class="mhandle"></div><div class="mtitle">Registrar resultados A/B</div>
+    <input id="ceA" type="number" placeholder="Alcance Versión A" inputmode="numeric">
+    <input id="ceB" type="number" placeholder="Alcance Versión B" inputmode="numeric">
+    <div class="mactions"><button class="btn" style="flex:1" onclick="closeModal('mCerrar')">Cancelar</button><button class="btn btn-green" style="flex:2" onclick="confirmarExp()">Confirmar ganador</button></div>
+  </div>
+</div>
+<div id="mResultado" class="modal-overlay mhidden">
+  <div class="modal">
+    <div class="mhandle"></div><div class="mtitle">Registrar resultado</div>
+    <input id="rCont" placeholder="Título del contenido">
+    <select id="rPlat"><option>TikTok</option><option>Instagram</option><option>Facebook</option><option>LinkedIn</option></select>
+    <select id="rTipo"><option value="viral">Viral</option><option value="ia">IA</option><option value="negocios">Negocios</option><option value="autoridad">Autoridad</option><option value="conversion">Conversión</option></select>
+    <input id="rReach" type="number" placeholder="Alcance obtenido" inputmode="numeric">
+    <select id="rResult"><option value="win">Funcionó muy bien</option><option value="ok">Resultado medio</option><option value="lose">No funcionó</option></select>
+    <input id="rApr" placeholder="¿Qué aprendiste? (opcional)">
+    <div class="mactions"><button class="btn" style="flex:1" onclick="closeModal('mResultado')">Cancelar</button><button class="btn btn-green" style="flex:2" onclick="guardarResultado()">Guardar</button></div>
+  </div>
+</div>
+<div id="mClonar" class="modal-overlay mhidden">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">🔁 Generar variación</div>
+    <div id="mClonarInfo" style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5"></div>
+    <div class="slabel">Ajustar antes de generar (opcional)</div>
+    <textarea id="mClonarNota" placeholder="Qué cambiar: ej. 'más emocional', 'enfocado en LinkedIn', 'hook diferente'..." style="min-height:60px"></textarea>
+    <div class="mactions">
+      <button class="btn" style="flex:1" onclick="closeModal('mClonar')">Cancelar</button>
+      <button class="btn btn-green" style="flex:2" onclick="ejecutarClonar()">🔁 Generar variación</button>
+    </div>
+  </div>
+</div>
+<script>
+// ─── STATE ─────────────────────────────────────────────────────────────────
+const SK='lab-v6', META=5000, DIAS=30;
+const FINICIO=new Date('2026-04-09');
+
+const IDEAS_DEF=[
+  {id:1,titulo:'5 formas de usar IA para crear contenido en 30 minutos',tipo:'ia',hookScore:94,viral:91,conv:72,angulo:'Mostrar el proceso real, no el resultado. La gente quiere ver el cómo.',plats:['TikTok','Instagram'],sel:false},
+  {id:2,titulo:'Cómo conseguí mis primeros 3 clientes sin gastar en publicidad',tipo:'negocios',hookScore:92,viral:85,conv:94,angulo:'Historia personal + resultado concreto. Vulnerabilidad + prueba social.',plats:['LinkedIn','Facebook'],sel:false},
+  {id:3,titulo:'El error que comete el 90% de los que quieren crecer en redes',tipo:'viral',hookScore:96,viral:94,conv:55,angulo:'Nombrar el error exacto que tu audiencia comete ahora.',plats:['TikTok','Instagram','Facebook'],sel:false},
+  {id:4,titulo:'Reacciono a los peores consejos de marketing de esta semana',tipo:'viral',hookScore:93,viral:95,conv:38,angulo:'Entretener mientras demuestras autoridad. Repite cada semana.',plats:['TikTok','Instagram'],sel:false},
+  {id:5,titulo:'El framework exacto que uso para crear posts que generan leads',tipo:'conversion',hookScore:89,viral:68,conv:96,angulo:'Dale algo accionable hoy. Termina con CTA a DM.',plats:['LinkedIn','Facebook'],sel:false},
+  {id:6,titulo:'ChatGPT vs Claude vs Gemini para marketing — esto ganó',tipo:'ia',hookScore:91,viral:88,conv:75,angulo:'La gente quiere que alguien haga la prueba. Sé ese alguien.',plats:['TikTok','LinkedIn'],sel:false},
+  {id:7,titulo:'Gané X seguidores en 7 días haciendo solo esto (sin ads)',tipo:'viral',hookScore:95,viral:93,conv:70,angulo:'Actualiza el número con tu progreso real cada semana.',plats:['TikTok','Instagram','Facebook'],sel:false},
+  {id:8,titulo:'Lo que nadie te dice sobre los primeros 1.000 seguidores',tipo:'autoridad',hookScore:88,viral:80,conv:65,angulo:'Tu audiencia está exactamente ahí ahora.',plats:['Instagram','Facebook'],sel:false},
+  {id:9,titulo:'3 herramientas de IA que me ahorran 10 horas por semana',tipo:'ia',hookScore:93,viral:89,conv:78,angulo:'Utilidad concreta + ahorro de tiempo = alta retención.',plats:['TikTok','LinkedIn'],sel:false},
+  {id:10,titulo:'Por qué el 95% de los emprendedores no escala en redes',tipo:'negocios',hookScore:90,viral:86,conv:82,angulo:'Diagnóstico de problema + solución al final.',plats:['LinkedIn','Facebook'],sel:false},
+];
+
+const DEF={
+  plataformas:{facebook:420,instagram:180,tiktok:90,linkedin:55},
+  ritmo:9, apiKey:'', openaiKey:'', nbKey:'',
+  ideas: IDEAS_DEF.map(i=>({...i})),
+  contenidoListo:[],
+  experimentos:[
+    {id:1,v:'Hook con número vs sin número en TikTok',va:'5 herramientas de IA que uso cada día',vb:'Las herramientas de IA que uso cada día',plat:'TikTok',tipo:'hook',est:'activo',g:null,sa:0,sb:0},
+    {id:2,v:'IA vs negocios en LinkedIn',va:'ChatGPT para crear 30 piezas al mes',vb:'Sistema para crecer como consultor',plat:'LinkedIn',tipo:'tema',est:'activo',g:null,sa:0,sb:0},
+    {id:3,v:'Publicar 8am vs 7pm en Facebook',va:'8:00 AM',vb:'7:00 PM',plat:'Facebook',tipo:'hora',est:'completado',g:'B',sa:340,sb:890},
+  ],
+  resultados:[
+    {c:'Video "5 herramientas de IA"',plat:'TikTok',tipo:'ia',reach:3200,res:'win',apr:'Hooks con números = 2x retención'},
+    {c:'Post semana de contenido',plat:'LinkedIn',tipo:'autoridad',reach:1100,res:'ok',apr:'Necesita más narrativa personal'},
+    {c:'Reel error común marketing',plat:'Facebook',tipo:'viral',reach:4800,res:'win',apr:'Reels con subtítulos = mayor alcance'},
+  ],
+  metricas:[],
+  publicaciones:[],
+  acciones:[
+    {id:1,t:'Publicar Reel/TikTok con hook de número',r:'Usa el generador para crear el guión ahora mismo.',p:['TikTok','Instagram'],i:'high',done:false},
+    {id:2,t:'Participar en 2 grupos de Facebook con valor',r:'Actividad en grupos = +30-50 seguidores/semana.',p:['Facebook'],i:'high',done:false},
+    {id:3,t:'Publicar en LinkedIn: historia → aprendizaje → dato',r:'Mayor ROI por seguidor en tu nicho.',p:['LinkedIn'],i:'high',done:false},
+    {id:4,t:'Responder TODOS los comentarios en primeras 2h',r:'El algoritmo mide interacción temprana. +30% alcance.',p:['Todas'],i:'medium',done:false},
+    {id:5,t:'Reutilizar mejor TikTok en Instagram sin marca',r:'Mismo contenido, dos plataformas. Usa snapTik.app.',p:['Instagram'],i:'medium',done:false},
+    {id:6,t:'Registrar resultados del día en pestaña Resultados',r:'Sin datos, las recomendaciones no mejoran.',p:['Sistema'],i:'low',done:false},
+  ]
+};
+
+function load(){try{const s=localStorage.getItem(SK);return s?JSON.parse(s):JSON.parse(JSON.stringify(DEF));}catch(e){return JSON.parse(JSON.stringify(DEF));}}
+function save(){try{localStorage.setItem(SK,JSON.stringify(st));}catch(e){}}
+let st=load();
+// Migraciones
+if(!st.ideas)st.ideas=IDEAS_DEF.map(i=>({...i}));
+if(!st.contenidoListo)st.contenidoListo=[];
+if(!st.acciones)st.acciones=DEF.acciones.map(a=>({...a}));
+if(!st.openaiKey)st.openaiKey='';
+if(!st.nbKey)st.nbKey='';
+if(!st.publicaciones)st.publicaciones=[];
+if(!st.metricas)st.metricas=[];
+
+let tabNow='ideas', filtroNow='all', expPend=null, batchData=[], auditPlatSel='Facebook';
+let clonarPendIdx=-1, videoEngine='standard';
+
+// ─── UTILS ─────────────────────────────────────────────────────────────────
+function totalSeg(){return Object.values(st.plataformas).reduce((a,b)=>a+b,0);}
+function diasRest(){return Math.max(0,DIAS-Math.max(1,Math.round((new Date()-FINICIO)/86400000)));}
+function rNec(){const f=Math.max(META-totalSeg(),0),d=diasRest();return d>0?Math.ceil(f/d):999;}
+function onTrack(){return st.ritmo>=rNec();}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function semScore(s){return s>=85?'green':s>=70?'amber':'red';}
+function autoScore(m){const eng=m.vistas>0?(m.likes+m.coments*2+(m.guardados||0)*3)/m.vistas*100:0;if(m.vistas>=5000||eng>=8)return'high';if(m.vistas>=1000||eng>=3)return'mid';return'low';}
+function fmt(n){return n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n);}
+function toast(msg,col='var(--green)'){const t=document.createElement('div');t.style.cssText=`position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:${col};color:#000;padding:7px 15px;border-radius:20px;font-size:12px;font-weight:700;z-index:999;white-space:nowrap;`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800);}
+
+// ─── HEADER ────────────────────────────────────────────────────────────────
+function renderHeader(){
+  const tot=totalSeg(),pct=Math.min(100,Math.round(tot/META*1000)/10);
+  document.getElementById('pfill').style.width=pct+'%';
+  document.getElementById('plabel').textContent=tot.toLocaleString('es')+' / '+META.toLocaleString('es');
+  const g=document.getElementById('hgoal');
+  g.textContent=onTrack()?'EN RITMO':'MODO AGRESIVO';
+  g.className='hbadge'+(onTrack()?' ok':'');
+  document.getElementById('platPills').innerHTML=
+    `<span class="plat-pill" style="color:#1877F2">FB ${st.plataformas.facebook}</span>
+     <span class="plat-pill" style="color:#e1306c">IG ${st.plataformas.instagram}</span>
+     <span class="plat-pill">TK ${st.plataformas.tiktok}</span>
+     <span class="plat-pill" style="color:#0A66C2">LI ${st.plataformas.linkedin}</span>`;
+  const pub=st.contenidoListo.length;
+  const badge=document.getElementById('badgeListo');
+  badge.style.display=pub>0?'inline-block':'none';
+  badge.textContent=pub;
+}
+
+// ─── TABS ──────────────────────────────────────────────────────────────────
+const TABS=['ideas','listo','generador','video','publicacion','insights','resultados','auditoria','hoy','motor','ia'];
+function goTab(t){
+  tabNow=t;
+  TABS.forEach(id=>document.getElementById('tab-'+id).classList.toggle('active',id===t));
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',TABS[i]===t));
+  document.getElementById('fab').style.display=(t==='ia')?'flex':'none';
+  renderTab(t);
+}
+function fabClick(){if(tabNow==='ia')openModal('mResultado');}
+function renderTab(t){
+  if(t==='ideas')renderIdeas();
+  else if(t==='listo')renderListo();
+  else if(t==='generador')renderGenStatus();
+  else if(t==='video')renderVideo();
+  else if(t==='publicacion')renderPublicacion();
+  else if(t==='insights')renderInsights();
+  else if(t==='resultados')renderResultados();
+  else if(t==='hoy')renderHoy();
+  else if(t==='motor')renderMotor();
+  else if(t==='ia')renderIa();
+  renderHeader();
+}
+
+// ─── IDEAS ─────────────────────────────────────────────────────────────────
+function setFiltro(f,el){filtroNow=f;document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));if(el)el.classList.add('active');renderIdeas();}
+function renderIdeas(){
+  const ideas=filtroNow==='all'?st.ideas:st.ideas.filter(i=>i.tipo===filtroNow);
+  const sel=st.ideas.filter(i=>i.sel);
+  document.getElementById('selBar').classList.toggle('hidden',sel.length===0);
+  document.getElementById('selInfo').textContent=sel.length+' idea'+(sel.length===1?'':'s')+' seleccionada'+(sel.length===1?'':'s');
+  document.getElementById('ideasList').innerHTML=!ideas.length?'<div class="empty">Sin ideas en esta categoría.</div>':
+    ideas.map(i=>{
+      const sc=semScore(i.hookScore);
+      const bc=sc==='green'?'var(--green)':sc==='amber'?'var(--amber)':'var(--red)';
+      return `<div class="idea-card ${i.sel?'selected':''}" id="ic-${i.id}">
+        <div class="idea-check ${i.sel?'checked':''}" onclick="toggleSel(${i.id})">${i.sel?'✓':''}</div>
+        <div class="idea-body">
+          <div class="idea-top">
+            <div class="semaforo sem-${sc}"></div>
+            <span class="badge ${i.tipo==='viral'?'bv':i.tipo==='ia'?'bi':i.tipo==='negocios'?'bm':i.tipo==='autoridad'?'bg':'bh'}">${i.tipo}</span>
+            <span class="muted2">HOOK ${i.hookScore}/100</span>
+          </div>
+          <div class="idea-title">${esc(i.titulo)}</div>
+          <div class="idea-angle">${esc(i.angulo)}</div>
+          <div class="bartrack"><div class="barfill" style="width:${i.hookScore}%;background:${bc}"></div></div>
+          <div class="scorerow"><span>VIRAL ${i.viral}%</span><span>CONV ${i.conv}%</span></div>
+          <div class="chips">${i.plats.map(p=>`<span class="badge ${p==='TikTok'?'btk':p==='Instagram'?'big':p==='Facebook'?'bfb':'bli'}">${p}</span>`).join('')}</div>
+        </div>
+      </div>`;
+    }).join('');
+}
+function toggleSel(id){const idea=st.ideas.find(x=>x.id===id);if(idea){idea.sel=!idea.sel;save();renderIdeas();renderHeader();}}
+function deseleccionarTodo(){st.ideas.forEach(i=>i.sel=false);save();renderIdeas();renderHeader();}
+
+// ─── GENERAR DE SELECCIONADAS ──────────────────────────────────────────────
+async function generarDeSeleccionadas(){
+  const seleccionadas=st.ideas.filter(i=>i.sel);
+  if(!seleccionadas.length){toast('Selecciona al menos una idea primero','var(--amber)');return;}
+  if(!st.apiKey){toast('Configura tu API key de Anthropic en Generador','var(--red)');return;}
+  const btn=document.getElementById('btnGenSel');
+  btn.disabled=true;btn.textContent='⏳ Generando...';
+  goTab('listo');
+  document.getElementById('listoContainer').innerHTML=`<div class="audit-loading"><div class="al-spinner"></div><div class="al-text">Generando contenido para ${seleccionadas.length} idea${seleccionadas.length>1?'s':''}...</div><div class="al-sub">20-30 segundos</div></div>`;
+  const listaIdeas=seleccionadas.map((i,n)=>`${n+1}. "${i.titulo}" (tipo: ${i.tipo}, plataformas: ${i.plats.join(', ')})`).join('\n');
+  const prompt=`Eres experto en marketing viral. Genera contenido completo para estas ideas de marca personal (marketing, IA, negocios).
+IDEAS:\n${listaIdeas}
+Para CADA idea genera un objeto JSON:
+[{"id":número,"titulo":"","tipo":"","plataforma":"","hookA":"","hookB":"","guion":"[HOOK] texto\\n\\n[DESARROLLO] 3-4 frases\\n\\n[CTA] texto","caption":"con emojis y hashtags","idea_visual":"qué mostrar","prompt_imagen":"detailed English DALL-E 3 prompt, 9:16 vertical","escenas":[{"texto":"texto pantalla <60 chars","subtitulo":"","emoji":""},{"texto":"","subtitulo":"","emoji":""},{"texto":"","subtitulo":"","emoji":""}]}]
+Responde ÚNICAMENTE con el array JSON.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':st.apiKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:6000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    const text=data.content[0].text.trim().replace(/^```json\s*/,'').replace(/\s*```$/,'').trim();
+    const generados=JSON.parse(text);
+    const nuevos=generados.map(g=>({...g,publicado:false,pubEstado:'pendiente',pubPlat:g.plataforma||'TikTok',imgs:[null,null],timestamp:Date.now()}));
+    st.contenidoListo=[...nuevos,...st.contenidoListo];
+    deseleccionarTodo();save();renderListo();toast(`✅ ${nuevos.length} piezas generadas`);
+  }catch(err){
+    document.getElementById('listoContainer').innerHTML=`<div class="card" style="border-color:var(--red)"><div style="color:var(--red);font-weight:700;margin-bottom:6px">Error</div><div class="muted">${esc(err.message)}</div></div>`;
+  }
+  btn.disabled=false;btn.textContent='⚡ Generar contenido';
+}
+
+// ─── CONTENIDO LISTO ───────────────────────────────────────────────────────
+function renderListo(){
+  renderHeader();
+  if(!st.contenidoListo.length){
+    document.getElementById('listoContainer').innerHTML=`<div class="gen-empty"><div class="ge-icon">✅</div><div class="ge-title">Sin contenido generado aún</div><div class="ge-sub">Ve a Ideas, selecciona y presiona "Generar contenido".</div></div>`;
+    return;
+  }
+  const pubCount=st.contenidoListo.filter(c=>c.publicado).length;
+  document.getElementById('listoContainer').innerHTML=`
+    <div class="rsb" style="margin-bottom:10px">
+      <span class="muted2">${st.contenidoListo.length} piezas · ${pubCount} publicadas</span>
+      <button class="btn btn-sm" onclick="limpiarPublicados()">Limpiar publicados</button>
+    </div>`+
+    st.contenidoListo.map((item,i)=>{
+      const scoreData=getItemScore(item);
+      return `<div class="cl-item" id="cli-${i}">
+        <div class="cl-header" onclick="toggleCL(${i})">
+          <span class="cl-num">${String(i+1).padStart(2,'0')}</span>
+          <span class="cl-title">${esc(item.titulo)}</span>
+          ${scoreData?`<span class="score-pill ${scoreData.cls}" style="margin-right:4px">${scoreData.label}</span>`:''}
+          <span class="cl-status ${item.publicado?'status-publicado':'status-listo'}">${item.publicado?'PUBLICADO':'LISTO'}</span>
+          <span class="cl-arrow" id="cla-${i}">▼</span>
+        </div>
+        <div class="cl-body" id="clb-${i}">
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
+            <span class="badge ${item.tipo==='viral'?'bv':item.tipo==='ia'?'bi':item.tipo==='negocios'?'bm':item.tipo==='autoridad'?'bg':'bh'}">${item.tipo||''}</span>
+            <span class="badge ${(item.plataforma||'')==='TikTok'?'btk':(item.plataforma||'')==='Instagram'?'big':(item.plataforma||'')==='Facebook'?'bfb':'bli'}">${item.plataforma||''}</span>
+          </div>
+          <div class="cl-section">
+            <div class="cl-section-label">Hooks A/B</div>
+            <div class="hook-ab">
+              <div class="hook-card"><div class="hook-ver a">VERSIÓN A</div><div class="hook-txt">${esc(item.hookA)}</div></div>
+              <div class="hook-card"><div class="hook-ver b">VERSIÓN B</div><div class="hook-txt">${esc(item.hookB)}</div></div>
+            </div>
+          </div>
+          <div class="cl-section">
+            <div class="cl-section-label">Guión completo</div>
+            <div class="script-box">${formatScript(item.guion)}</div>
+          </div>
+          <div class="cl-section">
+            <div class="cl-section-label">Caption para redes</div>
+            <div class="caption-box">${esc(item.caption)}</div>
+          </div>
+          <div class="cl-section">
+            <div class="cl-section-label">Prompt imagen (DALL-E 3 / NanoBanana)</div>
+            <div class="prompt-box">${esc(item.prompt_imagen)}</div>
+          </div>
+          <div class="cl-section">
+            <div class="rsb"><div class="cl-section-label" style="margin:0">Imágenes</div>
+            <div style="display:flex;gap:5px">
+              <button class="btn btn-sm btn-outline" onclick="generarImgsListo(${i})">DALL-E 3</button>
+              ${st.nbKey?`<button class="btn btn-sm btn-cyan" onclick="generarImgsNB(${i})">🍌 NanoBanana</button>`:''}
+            </div></div>
+            <div class="img-grid" id="imgListo-${i}">${renderImgSlots(item.imgs,i)}</div>
+          </div>
+          <div class="cl-actions">
+            <button class="btn btn-sm" onclick="copiarTexto('${esc(item.hookA||'')}\\n\\n${esc(item.guion||'')}')">Copiar guión</button>
+            <button class="btn btn-sm" onclick="copiarTexto('${esc(item.caption||'')}')">Copiar caption</button>
+            <button class="btn btn-sm btn-cyan" onclick="abrirClonar(${i})">🔁 Generar más como este</button>
+            <button class="btn btn-sm ${item.publicado?'':'btn-green'}" onclick="togglePublicado(${i})">${item.publicado?'✓ Publicado':'Marcar publicado'}</button>
+            <button class="btn btn-sm" onclick="exportarItem(${i})">Exportar</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function getItemScore(item){
+  const mets=(st.metricas||[]).filter(m=>m.titulo===item.titulo);
+  if(!mets.length)return null;
+  const best=mets.reduce((a,b)=>(b.vistas>a.vistas?b:a),mets[0]);
+  const s=autoScore(best);
+  return{cls:s==='high'?'sp-high':s==='mid'?'sp-mid':'sp-low',label:s==='high'?'🔥 Alto':s==='mid'?'📈 Medio':'😐 Bajo'};
+}
+
+function renderImgSlots(imgs,idx){
+  return(imgs||[null,null]).map((url,vi)=>`
+    <div class="img-slot">
+      <span class="img-label">Ver. ${vi===0?'A':'B'}</span>
+      ${url?`<img src="${url}" alt="V${vi===0?'A':'B'}" loading="lazy">`:`<div class="img-placeholder"><div class="ip-icon">🖼️</div><div class="ip-text">Sin imagen</div></div>`}
+    </div>`).join('');
+}
+
+function toggleCL(i){const b=document.getElementById('clb-'+i),a=document.getElementById('cla-'+i);const open=b.classList.contains('open');b.classList.toggle('open',!open);a.classList.toggle('open',!open);}
+function togglePublicado(i){st.contenidoListo[i].publicado=!st.contenidoListo[i].publicado;save();renderListo();}
+function limpiarPublicados(){st.contenidoListo=st.contenidoListo.filter(c=>!c.publicado);save();renderListo();renderHeader();}
+function formatScript(g){return esc(g||'').replace(/\[HOOK\]/g,'<strong style="color:var(--green)">[HOOK]</strong>').replace(/\[DESARROLLO\]/g,'<strong style="color:var(--blue)">[DESARROLLO]</strong>').replace(/\[CTA\]/g,'<strong style="color:var(--amber)">[CTA]</strong>');}
+function copiarTexto(txt){navigator.clipboard.writeText(txt.replace(/\\n/g,'\n')).then(()=>toast('Copiado'));}
+function exportarItem(i){
+  const item=st.contenidoListo[i];if(!item)return;
+  const txt=`LABORATORIO DE CRECIMIENTO — Pieza ${i+1}\n${item.titulo}\n${'═'.repeat(50)}\nTIPO: ${item.tipo} | PLATAFORMA: ${item.plataforma}\nHOOK A: ${item.hookA}\nHOOK B: ${item.hookB}\n\nGUIÓN:\n${item.guion}\n\nCAPTION:\n${item.caption}\n\nIDEA VISUAL:\n${item.idea_visual||''}\n\nPROMPT IMAGEN:\n${item.prompt_imagen}`;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));a.download=`pieza-${i+1}.txt`;a.click();
+}
+
+// ─── CLONAR / GENERAR MÁS COMO ESTE ───────────────────────────────────────
+function abrirClonar(i){
+  clonarPendIdx=i;
+  const item=st.contenidoListo[i];
+  document.getElementById('mClonarInfo').textContent=`Basado en: "${item.titulo}" (${item.tipo} · ${item.plataforma}). Se reutilizará la estructura y hook que funcionó.`;
+  document.getElementById('mClonarNota').value='';
+  openModal('mClonar');
+}
+
+async function ejecutarClonar(){
+  if(clonarPendIdx<0)return;
+  const item=st.contenidoListo[clonarPendIdx];
+  const nota=document.getElementById('mClonarNota').value.trim();
+  if(!st.apiKey){toast('Configura API de Anthropic','var(--red)');return;}
+  closeModal('mClonar');
+
+  const score=getItemScore(item);
+  const prompt=`Eres experto en marketing viral. Crea una variación nueva del siguiente contenido exitoso, reutilizando su estructura y tipo de hook.
+ORIGINAL:
+- Título: ${item.titulo}
+- Tipo: ${item.tipo}
+- Plataforma: ${item.plataforma}
+- Hook A: ${item.hookA}
+- Guión: ${item.guion}
+${nota?'INSTRUCCIÓN ESPECIAL: '+nota:''}
+Genera UNA variación nueva en JSON:
+{"titulo":"","tipo":"${item.tipo}","plataforma":"${item.plataforma}","hookA":"","hookB":"","guion":"[HOOK] texto\\n\\n[DESARROLLO] texto\\n\\n[CTA] texto","caption":"con emojis y hashtags","idea_visual":"","prompt_imagen":"detailed English DALL-E 3 prompt, 9:16","escenas":[{"texto":"","subtitulo":"","emoji":""},{"texto":"","subtitulo":"","emoji":""},{"texto":"","subtitulo":"","emoji":""}]}
+Responde SOLO con el JSON.`;
+
+  toast('⏳ Generando variación...','var(--cyan)');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':st.apiKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    const text=data.content[0].text.trim().replace(/^```json\s*/,'').replace(/\s*```$/,'').trim();
+    const nuevo=JSON.parse(text);
+    nuevo.publicado=false;nuevo.pubEstado='pendiente';nuevo.pubPlat=nuevo.plataforma||item.plataforma;nuevo.imgs=[null,null];nuevo.timestamp=Date.now();nuevo.clonDe=item.titulo;
+    st.contenidoListo.unshift(nuevo);save();renderListo();toast('✅ Variación generada');
+  }catch(err){toast('Error: '+err.message,'var(--red)');}
+}
+
+// ─── GENERADOR MASIVO ──────────────────────────────────────────────────────
+function renderGenStatus(){
+  document.getElementById('anthropicStatus').textContent=st.apiKey?'✅ Activa':'❌ No configurada';
+  document.getElementById('anthropicStatus').style.color=st.apiKey?'var(--green)':'var(--red)';
+  document.getElementById('openaiStatus').textContent=st.openaiKey?'✅ Activa':'❌ No configurada';
+  document.getElementById('openaiStatus').style.color=st.openaiKey?'var(--green)':'var(--red)';
+  document.getElementById('nbStatus').textContent=st.nbKey?'✅ Activa':'❌ No configurada';
+  document.getElementById('nbStatus').style.color=st.nbKey?'var(--cyan)':'var(--red)';
+  if(st.apiKey)document.getElementById('keyStatus').textContent='✅ Clave de Anthropic activa';
+  if(st.openaiKey)document.getElementById('openaiKeyStatus').textContent='✅ Clave de OpenAI activa';
+  if(st.nbKey)document.getElementById('nbKeyStatus').textContent='✅ Clave NanoBanana activa';
+}
+
+function guardarKey(){const k=document.getElementById('apiKeyInput').value.trim();if(!k.startsWith('sk-ant-')){document.getElementById('keyStatus').textContent='❌ Debe empezar con sk-ant-';return;}st.apiKey=k;save();document.getElementById('keyStatus').textContent='✅ Clave de Anthropic activa';document.getElementById('apiKeyInput').value='';renderGenStatus();}
+function guardarOpenAIKey(){const k=document.getElementById('openaiKeyInput').value.trim();if(!k.startsWith('sk-')){document.getElementById('openaiKeyStatus').textContent='❌ Debe empezar con sk-';return;}st.openaiKey=k;save();document.getElementById('openaiKeyStatus').textContent='✅ Clave de OpenAI activa';document.getElementById('openaiKeyInput').value='';renderGenStatus();}
+function guardarNbKey(){const k=document.getElementById('nbKeyInput').value.trim();if(!k){return;}st.nbKey=k;save();document.getElementById('nbKeyStatus').textContent='✅ Clave NanoBanana activa';document.getElementById('nbKeyInput').value='';renderGenStatus();toast('🍌 NanoBanana activado','var(--cyan)');}
+
+async function generarLote(){
+  if(!st.apiKey){alert('Configura tu API key de Anthropic primero.');return;}
+  const plat=document.getElementById('genPlat').value,tipo=document.getElementById('genTipo').value;
+  const cantidad=parseInt(document.getElementById('genCantidad').value);
+  const btn=document.getElementById('btnGenerar');
+  btn.disabled=true;btn.textContent='⏳ Generando...';
+  document.getElementById('batchContainer').innerHTML=`<div class="gen-loading"><div class="gl-icon">⚡</div><div style="font-size:13px;font-family:'JetBrains Mono',monospace">Generando ${cantidad} piezas...</div></div>`;
+  const platStr=plat==='todas'?'TikTok, Instagram, Facebook y LinkedIn':plat;
+  const tipoStr=tipo==='mixto'?'viral, autoridad y conversión':tipo;
+  const prompt=`Genera ${cantidad} piezas de contenido para marca personal (marketing, IA, negocios). Plataformas: ${platStr}. Tipos: ${tipoStr}.
+Responde SOLO con JSON array:
+[{"titulo":"","tipo":"viral|autoridad|conversion|ia|negocios","plataforma":"TikTok|Instagram|Facebook|LinkedIn","hookA":"","hookB":"","guion":"[HOOK] texto\\n\\n[DESARROLLO] texto\\n\\n[CTA] texto","caption":"","idea_visual":"","prompt_imagen":"detailed English DALL-E 3 prompt, 9:16 vertical","prompt_video":"cinematic short video prompt in English, 9:16 social media","hookScore":número,"escenas":[{"texto":"<55 chars","subtitulo":"","emoji":""},{"texto":"","subtitulo":"","emoji":""},{"texto":"","subtitulo":"","emoji":""}]}]`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':st.apiKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    const text=data.content[0].text.trim().replace(/^```json\s*/,'').replace(/\s*```$/,'').trim();
+    batchData=JSON.parse(text);renderBatch(batchData);
+  }catch(err){
+    document.getElementById('batchContainer').innerHTML=`<div class="card" style="border-color:var(--red)"><div style="color:var(--red);font-weight:700;margin-bottom:6px">Error</div><div class="muted">${esc(err.message)}</div></div>`;
+  }
+  btn.disabled=false;btn.textContent='⚡ Generar lote diario';
+}
+
+function renderBatch(data){
+  document.getElementById('batchContainer').innerHTML=`<div class="rsb" style="margin-bottom:9px"><span class="muted2">${data.length} piezas generadas</span><button class="btn btn-sm" onclick="exportarTodo()">Exportar todo</button></div>`+
+    data.map((item,i)=>`
+    <div class="content-item" id="ci-${i}">
+      <div class="ci-header" onclick="toggleCI(${i})">
+        <span class="ci-num">${String(i+1).padStart(2,'0')}</span>
+        <span class="ci-title">${esc(item.titulo)}</span>
+        <span class="badge ${item.tipo==='viral'?'bv':item.tipo==='ia'?'bi':item.tipo==='negocios'?'bm':item.tipo==='autoridad'?'bg':'bh'}" style="margin-left:7px;flex-shrink:0">${item.tipo}</span>
+        <span class="ci-arrow" id="cia-${i}">▼</span>
+      </div>
+      <div class="ci-body" id="cib-${i}">
+        <div class="hook-ab" style="margin-bottom:12px">
+          <div class="hook-card"><div class="hook-ver a">A</div><div class="hook-txt">${esc(item.hookA)}</div></div>
+          <div class="hook-card"><div class="hook-ver b">B</div><div class="hook-txt">${esc(item.hookB)}</div></div>
+        </div>
+        <div class="cl-section-label">Guión</div>
+        <div class="script-box" style="margin-bottom:10px">${formatScript(item.guion)}</div>
+        <div class="cl-section-label">Caption</div>
+        <div class="caption-box" style="margin-bottom:10px">${esc(item.caption)}</div>
+        <div class="cl-section-label">Prompt imagen</div>
+        <div class="prompt-box" style="margin-bottom:10px">${esc(item.prompt_imagen)}</div>
+        <div class="cl-section-label">Prompt video (Runway/Pika)</div>
+        <div class="prompt-box purple" style="margin-bottom:10px">${esc(item.prompt_video||'')}</div>
+        <div class="rsb" style="margin-bottom:7px">
+          <div class="cl-section-label" style="margin:0">Imágenes</div>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-sm btn-outline" onclick="genImgBatch(${i})">DALL-E 3</button>
+            ${st.nbKey?`<button class="btn btn-sm btn-cyan" onclick="genImgBatchNB(${i})">🍌 NanoBanana</button>`:''}
+          </div>
+        </div>
+        <div class="img-grid" id="imgBatch-${i}">
+          <div class="img-slot"><div class="img-placeholder"><div class="ip-icon">🖼️</div><div class="ip-text">Sin imagen</div></div></div>
+          <div class="img-slot"><div class="img-placeholder"><div class="ip-icon">🖼️</div><div class="ip-text">Sin imagen</div></div></div>
+        </div>
+        <div class="cl-actions">
+          <button class="btn btn-sm" onclick="copiarTexto('${esc(item.guion||'')}')">Copiar guión</button>
+          <button class="btn btn-sm" onclick="copiarTexto('${esc(item.caption||'')}')">Copiar caption</button>
+          <button class="btn btn-sm btn-green" onclick="guardarEnListo(${i})">→ Guardar en Listo</button>
+          <button class="btn btn-sm" onclick="exportarBatch(${i})">Exportar</button>
+        </div>
+      </div>
+    </div>`).join('');
+  toggleCI(0);
+}
+
+function guardarEnListo(i){
+  const item={...batchData[i],publicado:false,pubEstado:'pendiente',pubPlat:batchData[i].plataforma||'TikTok',imgs:[null,null],timestamp:Date.now()};
+  st.contenidoListo.unshift(item);save();toast('✅ Guardado en Listo');renderHeader();
+}
+
+function toggleCI(i){const b=document.getElementById('cib-'+i),a=document.getElementById('cia-'+i);if(!b)return;const o=b.classList.contains('open');b.classList.toggle('open',!o);a.classList.toggle('open',!o);}
+function limpiarBatch(){batchData=[];document.getElementById('batchContainer').innerHTML='<div class="gen-empty"><div class="ge-icon">⚡</div><div class="ge-title">Listo para generar</div></div>';}
+
+// Imágenes DALL-E
+async function generarImgsListo(i){
+  const item=st.contenidoListo[i];if(!item||!st.openaiKey){toast('Necesitas clave OpenAI','var(--amber)');return;}
+  const grid=document.getElementById('imgListo-'+i);
+  grid.innerHTML=`<div class="img-slot"><div class="img-loading"><div class="img-spinner"></div></div></div><div class="img-slot"><div class="img-loading"><div class="img-spinner"></div></div></div>`;
+  const prompts=[item.prompt_imagen,(item.prompt_imagen||'')+', alternative color scheme, same concept'];
+  const results=await Promise.all(prompts.map(p=>llamarDalle(p)));
+  item.imgs=results.map(r=>r.ok?r.url:null);save();
+  grid.innerHTML=results.map((r,vi)=>`<div class="img-slot"><span class="img-label">Ver. ${vi===0?'A':'B'}</span>${r.ok?`<img src="${r.url}" loading="lazy">`:`<div class="img-placeholder"><div class="ip-icon">⚠️</div><div class="ip-text">${esc(r.error||'Error')}</div></div>`}</div>`).join('');
+}
+async function genImgBatch(i){
+  const item=batchData[i];if(!item||!st.openaiKey){toast('Necesitas clave OpenAI','var(--amber)');return;}
+  const grid=document.getElementById('imgBatch-'+i);
+  grid.innerHTML=`<div class="img-slot"><div class="img-loading"><div class="img-spinner"></div></div></div><div class="img-slot"><div class="img-loading"><div class="img-spinner"></div></div></div>`;
+  const results=await Promise.all([item.prompt_imagen,(item.prompt_imagen||'')+', alternative style'].map(p=>llamarDalle(p)));
+  grid.innerHTML=results.map((r,vi)=>`<div class="img-slot"><span class="img-label">${vi===0?'A':'B'}</span>${r.ok?`<img src="${r.url}" loading="lazy">`:`<div class="img-placeholder"><div class="ip-icon">⚠️</div><div class="ip-text">${esc(r.error||'Error')}</div></div>`}</div>`).join('');
+}
+async function llamarDalle(p){
+  try{const r=await fetch('https://api.openai.com/v1/images/generations',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+st.openaiKey},body:JSON.stringify({model:'dall-e-3',prompt:p+', vertical format 9:16, social media optimized, modern vibrant design',n:1,size:'1024x1792',quality:'standard'})});const d=await r.json();if(d.error)return{ok:false,error:d.error.message};return{ok:true,url:d.data[0].url};}catch(e){return{ok:false,error:e.message};}
+}
+
+// Imágenes NanoBanana (fallback a DALL-E si falla)
+async function generarImgsNB(i){
+  const item=st.contenidoListo[i];
+  if(!item){return;}
+  toast('🍌 Generando con NanoBanana...','var(--cyan)');
+  const result=await llamarNanoBanana(item.prompt_imagen,'image');
+  if(result.ok){
+    item.imgs=[result.url,null];save();
+    const grid=document.getElementById('imgListo-'+i);
+    if(grid)grid.innerHTML=`<div class="img-slot"><span class="img-label">NanoBanana</span><img src="${result.url}" loading="lazy"></div><div class="img-slot"><div class="img-placeholder"><div class="ip-icon">🖼️</div><div class="ip-text">Ver. B pendiente</div></div></div>`;
+    toast('✅ Imagen NanoBanana lista','var(--cyan)');
+  }else{
+    toast('🍌 Fallback a DALL-E...','var(--amber)');
+    if(st.openaiKey)await generarImgsListo(i);
+    else toast('Error NanoBanana y sin clave DALL-E','var(--red)');
+  }
+}
+async function genImgBatchNB(i){
+  const item=batchData[i];if(!item)return;
+  toast('🍌 NanoBanana generando...','var(--cyan)');
+  const result=await llamarNanoBanana(item.prompt_imagen,'image');
+  if(result.ok){
+    const grid=document.getElementById('imgBatch-'+i);
+    if(grid)grid.innerHTML=`<div class="img-slot"><span class="img-label">NanoBanana</span><img src="${result.url}" loading="lazy"></div><div class="img-slot"><div class="img-placeholder"><div class="ip-icon">🖼️</div></div></div>`;
+    toast('✅ NanoBanana listo','var(--cyan)');
+  }else{
+    toast('Fallback a DALL-E','var(--amber)');
+    if(st.openaiKey)await genImgBatch(i);
+  }
+}
+
+async function llamarNanoBanana(prompt,tipo='image'){
+  if(!st.nbKey)return{ok:false,error:'Sin clave NanoBanana'};
+  try{
+    // NanoBanana API — endpoint y formato adaptable
+    const endpoint=tipo==='video'?'https://api.nanobanana.ai/v1/videos/generate':'https://api.nanobanana.ai/v1/images/generate';
+    const body=tipo==='video'
+      ?{prompt:prompt+', vertical 9:16, social media TikTok style, 15-20 seconds',aspect_ratio:'9:16',duration:20}
+      :{prompt:prompt+', vertical 9:16, social media optimized',aspect_ratio:'9:16',quality:'hd'};
+    const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+st.nbKey},body:JSON.stringify(body)});
+    if(!r.ok){const e=await r.json();return{ok:false,error:e.message||'Error NanoBanana'};}
+    const d=await r.json();
+    const url=d.url||d.image_url||d.video_url||(d.data&&d.data[0]&&d.data[0].url);
+    if(!url)return{ok:false,error:'Sin URL en respuesta'};
+    return{ok:true,url};
+  }catch(e){return{ok:false,error:e.message};}
+}
+
+function exportarTodo(){
+  if(!batchData.length)return;
+  const txt=batchData.map((item,i)=>`PIEZA ${i+1}: ${item.titulo}\nHook A: ${item.hookA}\nGuión: ${item.guion}\n\n`).join('═'.repeat(40)+'\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));a.download='lote-contenido.txt';a.click();
+}
+function exportarBatch(i){
+  const item=batchData[i];if(!item)return;
+  const txt=`${item.titulo}\n${'═'.repeat(50)}\nHook A: ${item.hookA}\nHook B: ${item.hookB}\n\nGuión:\n${item.guion}\n\nCaption:\n${item.caption}\n\nPrompt imagen:\n${item.prompt_imagen}\n\nPrompt video:\n${item.prompt_video||''}`;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));a.download=`pieza-batch-${i+1}.txt`;a.click();
+}
+// ─── VIDEO MEJORADO ────────────────────────────────────────────────────────
+let videoScenes=[], videoRecorder=null, videoChunks=[], videoBlob=null;
+
+function setVideoEngine(e){
+  videoEngine=e;
+  document.getElementById('engBtnStd').classList.toggle('active',e==='standard');
+  document.getElementById('engBtnNb').classList.toggle('active',e==='nanobanana');
+  document.getElementById('engBtnStd').classList.toggle('std',e==='standard');
+  const s=document.getElementById('vidEngineStatus');
+  const badge=document.getElementById('vidEngineBadge');
+  if(e==='nanobanana'){
+    if(!st.nbKey){s.className='nb-status err';s.textContent='❌ Clave NanoBanana no configurada. Ve a Generador para activarla.';return;}
+    s.className='nb-status ok';s.textContent='🍌 NanoBanana activo — calidad premium. Fallback automático a motor estándar.';
+    badge.textContent='🍌 NanoBanana';badge.style.borderColor='var(--cyan)';badge.style.color='var(--cyan)';
+  }else{
+    s.className='nb-status warn';s.textContent='⚡ Motor estándar activo — rápido, canvas interno, sin dependencias.';
+    badge.textContent='⚡ Estándar';badge.style.borderColor='var(--green)';badge.style.color='var(--green)';
+  }
+}
+
+function renderVideo(){
+  const sel=document.getElementById('videoSelectContent');
+  sel.innerHTML='<option value="">— Selecciona una pieza —</option>'+
+    st.contenidoListo.map((c,i)=>`<option value="${i}">${c.titulo}</option>`).join('');
+  const isEmpty=!st.contenidoListo.length;
+  document.getElementById('videoEmpty').style.display=isEmpty?'block':'none';
+  document.getElementById('videoScenePreview').style.display='none';
+}
+
+function onVideoSelectChange(){
+  const idx=parseInt(document.getElementById('videoSelectContent').value);
+  if(isNaN(idx)){document.getElementById('videoScenePreview').style.display='none';return;}
+  const item=st.contenidoListo[idx];
+  videoScenes=construirEscenas(item);
+  document.getElementById('videoSceneList').innerHTML=videoScenes.map((s,i)=>`
+    <div class="scene-card">
+      <div class="scene-num">S${i+1}</div>
+      <div>
+        <div class="scene-text">${esc(s.texto)}</div>
+        <div class="scene-sub">${esc(s.subtitulo)}</div>
+      </div>
+      <div class="scene-emoji">${s.emoji||'✨'}</div>
+    </div>`).join('');
+  document.getElementById('videoScenePreview').style.display='block';
+  document.getElementById('videoEmpty').style.display='none';
+  dibujarEscena(videoScenes[0],0,0);
+  document.getElementById('videoStatus').textContent=`${videoScenes.length} escenas · ~20s · formato 9:16`;
+  document.getElementById('btnDescargarVideo').style.display='none';
+  document.getElementById('nbVideoPreview').style.display='none';
+}
+
+function construirEscenas(item){
+  // Usa escenas generadas por IA si existen, si no construye desde guión
+  if(item.escenas&&item.escenas.length>=3){
+    const esc_data=item.escenas.slice(0,6);
+    // Asegura tener hasta 6 escenas añadiendo CTA si faltan
+    if(esc_data.length<3)esc_data.push({texto:'¡Sígueme para más!',subtitulo:'@DanielLab',emoji:'👇'});
+    return esc_data.map(s=>({texto:(s.texto||'').substring(0,60),subtitulo:s.subtitulo||'',emoji:s.emoji||'✨',bg:'#0a0a0a'}));
+  }
+  // Fallback: construir manualmente
+  const guion=(item.guion||'').replace(/\\n/g,'\n');
+  const lines=guion.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('['));
+  const scenes=[];
+  scenes.push({texto:(item.hookA||item.titulo).substring(0,55),subtitulo:item.tipo?item.tipo.toUpperCase():'',emoji:'🔥',bg:'#0a0a1a'});
+  lines.slice(0,4).forEach((line,i)=>{if(line.length>10)scenes.push({texto:line.substring(0,60),subtitulo:'',emoji:['💡','🚀','💰','📈'][i]||'✨',bg:i%2===0?'#0a1a0a':'#1a0a0a'});});
+  scenes.push({texto:'¡Sígueme para más contenido!',subtitulo:'@DanielLab',emoji:'👇',bg:'#001a0a'});
+  return scenes.slice(0,6);
+}
+
+// Paletas de color por tipo de contenido
+const PALETTES={
+  viral:['#1a0028','#2d0058','#4a007a'],
+  ia:['#000820','#001040','#001a6e'],
+  negocios:['#1a0800','#3a1500','#5c2200'],
+  autoridad:['#001a0a','#003015','#005022'],
+  conversion:['#1a1000','#3a2200','#5c3800'],
+  default:['#0a0a0a','#141414','#1e1e1e']
+};
+function getPalette(tipo){return PALETTES[tipo]||PALETTES.default;}
+
+function dibujarEscena(scene,sceneIdx,progress){
+  const canvas=document.getElementById('videoCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=405,H=720;
+  ctx.clearRect(0,0,W,H);
+
+  // Fondo con degradado dinámico basado en índice de escena
+  const pal=getPalette(scene.tipo||'default');
+  const grad=ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,pal[0]||'#0a0a0a');
+  grad.addColorStop(0.5,pal[1]||'#141414');
+  grad.addColorStop(1,pal[2]||'#1e1e1e');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+
+  // Partículas/puntos de luz de fondo
+  ctx.fillStyle='rgba(255,255,255,0.03)';
+  for(let p=0;p<30;p++){const px=(p*137.5)%W,py=(p*97.3+sceneIdx*60)%H;ctx.beginPath();ctx.arc(px,py,1+(p%3),0,Math.PI*2);ctx.fill();}
+
+  // Línea de acento lateral
+  const accentColor=scene.emoji==='🔥'?'#ff5252':scene.emoji==='👇'?'#00e676':'#448aff';
+  ctx.fillStyle=accentColor+'33';ctx.fillRect(0,0,8,H);
+  ctx.fillStyle=accentColor;ctx.fillRect(0,H*progress*0.9,8,H*0.1);
+
+  // Número de escena (estilo minimalista)
+  ctx.fillStyle='rgba(255,255,255,0.15)';ctx.font='bold 11px JetBrains Mono, monospace';ctx.textAlign='left';
+  ctx.fillText(`${String(sceneIdx+1).padStart(2,'0')}/${String(videoScenes.length).padStart(2,'0')}`,22,28);
+
+  // Emoji grande centrado
+  ctx.font='72px serif';ctx.textAlign='center';ctx.shadowBlur=30;ctx.shadowColor=accentColor;
+  ctx.fillText(scene.emoji||'✨',W/2,H*0.38);ctx.shadowBlur=0;
+
+  // Línea decorativa
+  const lineY=H*0.44;ctx.strokeStyle=accentColor+'66';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(W*0.15,lineY);ctx.lineTo(W*0.85,lineY);ctx.stroke();
+
+  // Texto principal — estilo TikTok: grande, bold, centrado
+  ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.shadowColor='rgba(0,0,0,0.95)';ctx.shadowBlur=25;ctx.shadowOffsetY=2;
+  ctx.font='bold 30px Space Grotesk, Arial';
+  const words=(scene.texto||'').split(' ');let lines=[],cur='';
+  words.forEach(w=>{const t=cur+(cur?' ':'')+w;if(ctx.measureText(t).width>330){if(cur)lines.push(cur);cur=w;}else cur=t;});
+  if(cur)lines.push(cur);
+  const lh=42,totalH=lines.length*lh;
+  const startY=H*0.52;
+  lines.forEach((l,li)=>{
+    // Highlight palabras clave (en MAYÚSCULAS o entre comillas)
+    if(l===l.toUpperCase()&&l.length>2){ctx.fillStyle=accentColor;}else{ctx.fillStyle='#ffffff';}
+    ctx.fillText(l,W/2,startY+li*lh-totalH/2+lh/2);
+  });
+  ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+
+  // Subtítulo / tag
+  if(scene.subtitulo){
+    const sw=ctx.measureText(scene.subtitulo.toUpperCase()).width+24;
+    ctx.fillStyle=accentColor+'cc';ctx.beginPath();
+    ctx.roundRect?ctx.roundRect(W/2-sw/2,H*0.72-16,sw,28,6):ctx.rect(W/2-sw/2,H*0.72-16,sw,28);
+    ctx.fill();
+    ctx.fillStyle='#000';ctx.font='bold 12px JetBrains Mono, monospace';ctx.textAlign='center';
+    ctx.fillText(scene.subtitulo.toUpperCase(),W/2,H*0.72+4);
+  }
+
+  // Barra de progreso de escena
+  ctx.fillStyle='rgba(255,255,255,0.1)';ctx.fillRect(30,H-22,W-60,3);
+  ctx.fillStyle=accentColor;ctx.fillRect(30,H-22,(W-60)*progress,3);
+
+  // Barra de progreso total (más abajo)
+  ctx.fillStyle='rgba(255,255,255,0.06)';ctx.fillRect(0,H-8,W,8);
+  ctx.fillStyle=accentColor+'aa';ctx.fillRect(0,H-8,W*((sceneIdx+(progress))/videoScenes.length),8);
+}
+
+async function generarVideo(){
+  if(!videoScenes.length){toast('Selecciona contenido primero','var(--amber)');return;}
+  const btn=document.getElementById('btnGenerarVideo');
+
+  // Si NanoBanana está activo, intentar primero
+  if(videoEngine==='nanobanana'&&st.nbKey){
+    await generarVideoNanoBanana(btn);return;
+  }
+
+  // Motor estándar (canvas)
+  btn.disabled=true;btn.textContent='⏳ Generando...';
+  document.getElementById('videoStatus').textContent='Iniciando grabación...';
+  videoChunks=[];videoBlob=null;
+  const canvas=document.getElementById('videoCanvas');
+  const stream=canvas.captureStream(30);
+
+  let mimeType='video/webm;codecs=vp9';
+  if(!MediaRecorder.isTypeSupported(mimeType))mimeType='video/webm';
+  videoRecorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:3000000});
+  videoRecorder.ondataavailable=e=>{if(e.data.size>0)videoChunks.push(e.data);};
+  videoRecorder.onstop=()=>{
+    videoBlob=new Blob(videoChunks,{type:'video/webm'});
+    document.getElementById('btnDescargarVideo').style.display='inline-flex';
+    document.getElementById('videoStatus').textContent=`✅ Video listo — ${Math.round(videoBlob.size/1024)}KB · 20s · 9:16`;
+    btn.disabled=false;btn.textContent='🎬 Re-generar';
+    toast('✅ Video generado','var(--green)');
+  };
+  videoRecorder.start();
+
+  const totalDuration=20000, sceneDuration=totalDuration/videoScenes.length;
+  for(let s=0;s<videoScenes.length;s++){
+    const scene={...videoScenes[s],tipo:st.contenidoListo[parseInt(document.getElementById('videoSelectContent').value)]?.tipo||'default'};
+    const start=Date.now();
+    await new Promise(res=>{
+      function frame(){
+        const elapsed=Date.now()-start;
+        const sp=Math.min(elapsed/sceneDuration,1);
+        dibujarEscena(scene,s,sp);
+        document.getElementById('videoProgressFill').style.width=(((s+sp)/videoScenes.length)*100)+'%';
+        document.getElementById('videoStatus').textContent=`Escena ${s+1}/${videoScenes.length} · ${Math.round((s+sp)/videoScenes.length*100)}%`;
+        if(elapsed<sceneDuration)requestAnimationFrame(frame);else res();
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+  videoRecorder.stop();
+}
+
+async function generarVideoNanoBanana(btn){
+  btn.disabled=true;btn.textContent='🍌 Generando con NanoBanana...';
+  const idx=parseInt(document.getElementById('videoSelectContent').value);
+  const item=st.contenidoListo[idx];
+  const prompt=item.prompt_video||`${item.hookA}. ${item.idea_visual||''}. vertical social media video, fast paced, TikTok style`;
+  document.getElementById('videoStatus').textContent='🍌 Enviando a NanoBanana...';
+  const result=await llamarNanoBanana(prompt,'video');
+  if(result.ok){
+    const prev=document.getElementById('nbVideoPreview');
+    const cont=document.getElementById('nbVidContainer');
+    prev.style.display='block';
+    cont.innerHTML=`<video src="${result.url}" controls playsinline style="width:100%;border-radius:var(--radius)"></video>`;
+    document.getElementById('videoStatus').textContent='✅ Video NanoBanana listo';
+    document.getElementById('btnDescargarVideo').style.display='inline-flex';
+    videoBlob={url:result.url,_nb:true};
+    toast('✅ NanoBanana video listo','var(--cyan)');
+  }else{
+    document.getElementById('videoStatus').textContent='🍌 Fallback a motor estándar...';
+    toast('Fallback a motor estándar','var(--amber)');
+    videoEngine='standard';
+    await generarVideo();return;
+  }
+  btn.disabled=false;btn.textContent='🎬 Re-generar';
+}
+
+function descargarVideo(){
+  if(!videoBlob)return;
+  if(videoBlob._nb){window.open(videoBlob.url,'_blank');return;}
+  const idx=parseInt(document.getElementById('videoSelectContent').value);
+  const title=(!isNaN(idx)&&st.contenidoListo[idx])?st.contenidoListo[idx].titulo.substring(0,30).replace(/\s+/g,'-'):'video';
+  const url=URL.createObjectURL(videoBlob);
+  const a=document.createElement('a');a.href=url;a.download=`video-${title}.webm`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+
+// ─── PUBLICACIÓN ───────────────────────────────────────────────────────────
+function renderPublicacion(){
+  const filtro=document.getElementById('pubFiltroEstado')?document.getElementById('pubFiltroEstado').value:'todos';
+  if(!st.contenidoListo.length){
+    document.getElementById('pubContainer').innerHTML=`<div class="gen-empty"><div class="ge-icon">📤</div><div class="ge-title">Sin contenido aún</div><div class="ge-sub">Genera contenido primero en la pestaña Ideas.</div></div>`;
+    return;
+  }
+  st.contenidoListo.forEach(item=>{if(!item.pubEstado)item.pubEstado='pendiente';if(!item.pubPlat)item.pubPlat=item.plataforma||'TikTok';});
+  save();
+  let items=st.contenidoListo.map((item,i)=>({...item,_idx:i}));
+  if(filtro!=='todos')items=items.filter(x=>x.pubEstado===filtro);
+  if(!items.length){document.getElementById('pubContainer').innerHTML=`<div class="empty">Sin piezas con estado "${filtro}".</div>`;return;}
+  document.getElementById('pubContainer').innerHTML=items.map(item=>{
+    const i=item._idx;
+    const eC=item.pubEstado==='publicado'?'pub-publicado':item.pubEstado==='listo'?'pub-listo':'pub-pendiente';
+    const eL=item.pubEstado==='publicado'?'✅ Publicado':item.pubEstado==='listo'?'🔵 Listo':'⏳ Pendiente';
+    return`<div class="pub-item" id="pubi-${i}">
+      <div class="pub-item-header" onclick="togglePub(${i})">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(item.titulo)}</div>
+          <div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap">
+            <span class="pub-estado ${eC}">${eL}</span>
+            <span class="badge ${item.pubPlat==='TikTok'?'btk':item.pubPlat==='Instagram'?'big':item.pubPlat==='Facebook'?'bfb':'bli'}">${item.pubPlat}</span>
+          </div>
+        </div>
+        <span style="font-size:11px;color:var(--text3);margin-left:8px">▼</span>
+      </div>
+      <div class="pub-item-body" id="pubb-${i}">
+        <div class="slabel">Plataforma sugerida</div>
+        <div class="pub-plat">
+          ${['TikTok','Instagram','Facebook','LinkedIn'].map(p=>`<div class="pub-plat-btn ${item.pubPlat===p?'active':''}" onclick="setPubPlat(${i},'${p}')"><div class="ppb-name" style="color:${p==='Instagram'?'#e1306c':p==='Facebook'?'#1877F2':p==='LinkedIn'?'#0A66C2':'var(--text)'}">${p}</div><div class="ppb-sub">${p==='TikTok'?'Viral/Joven':p==='Instagram'?'Visual':p==='Facebook'?'Comunidades':'Profesional'}</div></div>`).join('')}
+        </div>
+        <div id="pubready-${i}" style="display:${item.pubEstado!=='pendiente'?'block':'none'}">
+          <div class="pub-content-box">
+            <div class="pub-label">Texto listo</div>
+            <div class="pub-text">${esc(item.hookA||item.titulo)}<br><br>${esc((item.guion||'').replace(/\\n/g,'\n')).substring(0,300)}...</div>
+          </div>
+          <div class="pub-content-box">
+            <div class="pub-label">Caption</div>
+            <div class="pub-text" style="font-size:12px">${esc((item.caption||'').substring(0,250))}...</div>
+          </div>
+          <div class="pub-content-box">
+            <div class="pub-label">Hashtags</div>
+            <div class="pub-hashtags">${generarHashtags(item.tipo,item.pubPlat).map(h=>`<span class="pub-hashtag">${h}</span>`).join('')}</div>
+          </div>
+          ${item.imgs&&item.imgs[0]?`<div class="pub-content-box"><div class="pub-label">Imagen lista</div><img src="${item.imgs[0]}" style="width:100%;border-radius:8px;max-height:200px;object-fit:cover" loading="lazy"></div>`:''}
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <button class="btn btn-green" style="flex:1" onclick="copiarPublicacion(${i})">📋 Copiar todo</button>
+            <button class="btn btn-sm" onclick="setPubEstado(${i},'publicado')">✅ Publicado</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-green" style="flex:1" onclick="prepararPublicacion(${i})">⚡ Preparar publicación</button>
+          <button class="btn btn-sm" onclick="setPubEstado(${i},'pendiente')">⏳</button>
+          <button class="btn btn-sm" onclick="setPubEstado(${i},'listo')">🔵</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function generarHashtags(tipo,plat){
+  const base=['#marketing','#contenido','#emprendimiento','#redessociales'];
+  const byT={viral:['#viral','#tendencia','#crecimiento'],ia:['#inteligenciaartificial','#IA','#ChatGPT'],negocios:['#negocios','#emprendedor','#exito'],autoridad:['#autoridad','#liderazgo','#branding'],conversion:['#ventas','#leads','#clientes']};
+  const byP={TikTok:['#tiktok','#fyp','#parati'],Instagram:['#instagram','#reels'],Facebook:['#facebook','#grupos'],LinkedIn:['#linkedin','#networking']};
+  return [...base,...(byT[tipo]||[]).slice(0,3),...(byP[plat]||[]).slice(0,2)];
+}
+function togglePub(i){const b=document.getElementById('pubb-'+i);if(b)b.classList.toggle('open');}
+function setPubPlat(i,plat){st.contenidoListo[i].pubPlat=plat;save();renderPublicacion();}
+function setPubEstado(i,estado){st.contenidoListo[i].pubEstado=estado;save();renderPublicacion();toast('Estado: '+estado);}
+function prepararPublicacion(i){
+  st.contenidoListo[i].pubEstado='listo';save();
+  const el=document.getElementById('pubready-'+i);if(el)el.style.display='block';
+  renderPublicacion();toast('✅ Publicación preparada');
+}
+function copiarPublicacion(i){
+  const item=st.contenidoListo[i];if(!item)return;
+  const h=generarHashtags(item.tipo,item.pubPlat).join(' ');
+  const txt=`${item.hookA||item.titulo}\n\n${(item.guion||'').replace(/\\n/g,'\n').substring(0,500)}\n\n${item.caption||''}\n\n${h}`;
+  navigator.clipboard.writeText(txt).then(()=>toast('✅ Todo copiado'));
+}
+
+// ─── INSIGHTS ─────────────────────────────────────────────────────────────
+function renderInsights(){
+  const mets=st.metricas||[];
+  if(mets.length<2){
+    document.getElementById('insightCards').innerHTML=`<div class="gen-empty"><div class="ge-icon">💡</div><div class="ge-title">Sin datos suficientes</div><div class="ge-sub">Registra al menos 2 publicaciones en la pestaña Resultados para activar los insights.</div></div>`;
+    document.getElementById('insightHooksCard').style.display='none';
+    document.getElementById('insightRepetir').innerHTML='<div class="empty">Registra al menos 3 resultados.</div>';
+    document.getElementById('insightEvitar').innerHTML='<div class="empty">Registra al menos 3 resultados.</div>';
+    document.getElementById('insightHorarios').innerHTML='<div class="empty">Registra al menos 5 resultados.</div>';
+    document.getElementById('insightScore').textContent='—';
+    return;
+  }
+
+  const totalVistas=mets.reduce((a,m)=>a+(m.vistas||0),0);
+  const totalLikes=mets.reduce((a,m)=>a+(m.likes||0),0);
+  const totalComents=mets.reduce((a,m)=>a+(m.coments||0),0);
+  const totalGuardados=mets.reduce((a,m)=>a+(m.guardados||0),0);
+  const engRate=totalVistas>0?((totalLikes+totalComents*2+totalGuardados*3)/totalVistas*100):0;
+
+  // Score del sistema
+  const sysScore=Math.min(100,Math.round(
+    (mets.length*5)+(engRate*4)+(totalVistas>=50000?30:totalVistas>=10000?20:totalVistas>=1000?10:0)
+  ));
+  document.getElementById('insightScore').textContent=sysScore+'/100';
+  document.getElementById('insightScore').className='score-pill '+(sysScore>=70?'sp-high':sysScore>=40?'sp-mid':'sp-low');
+
+  // Análisis por plataforma
+  const byPlat={};
+  mets.forEach(m=>{if(!byPlat[m.plat])byPlat[m.plat]={v:0,l:0,c:0,g:0,n:0};byPlat[m.plat].v+=m.vistas||0;byPlat[m.plat].l+=m.likes||0;byPlat[m.plat].c+=m.coments||0;byPlat[m.plat].g+=m.guardados||0;byPlat[m.plat].n++;});
+  const topPlat=Object.entries(byPlat).sort((a,b)=>(b[1].v/b[1].n)-(a[1].v/a[1].n))[0];
+  const worstPlat=Object.entries(byPlat).sort((a,b)=>(a[1].v/a[1].n)-(b[1].v/b[1].n))[0];
+
+  // Análisis por tipo
+  const byTipo={};
+  mets.forEach(m=>{if(!byTipo[m.tipo])byTipo[m.tipo]={v:0,n:0,hooks:[]};byTipo[m.tipo].v+=m.vistas||0;byTipo[m.tipo].n++;if(m.hookUsado)byTipo[m.tipo].hooks.push({hook:m.hookUsado,v:m.vistas});});
+  const topTipo=Object.entries(byTipo).sort((a,b)=>(b[1].v/b[1].n)-(a[1].v/a[1].n));
+
+  // High performers vs low performers
+  const sorted=[...mets].sort((a,b)=>(b.vistas||0)-(a.vistas||0));
+  const topPerf=sorted.slice(0,Math.ceil(sorted.length*0.3));
+  const lowPerf=sorted.slice(-Math.ceil(sorted.length*0.3));
+
+  // Insight cards principales
+  document.getElementById('insightCards').innerHTML=`
+    ${topPlat?`<div class="insight-big">
+      <div class="ib-top"><div class="ib-icon">🏆</div><div><div class="ib-title">Plataforma ganadora</div><div class="muted2">${topPlat[0]}</div></div>
+        <div style="text-align:right"><div class="ib-score green">${fmt(Math.round(topPlat[1].v/topPlat[1].n))}</div><div class="muted2">vistas/post</div></div>
+      </div>
+      <div class="ib-body">Tus publicaciones en <strong>${topPlat[0]}</strong> promedian ${fmt(Math.round(topPlat[1].v/topPlat[1].n))} vistas — ${Math.round((topPlat[1].v/topPlat[1].n)/Math.max(1,totalVistas/mets.length)*100)}% más que tu promedio. Concentra el 50% de tu energía aquí.</div>
+    </div>`:''}
+    ${topTipo[0]?`<div class="insight-big">
+      <div class="ib-top"><div class="ib-icon">💎</div><div><div class="ib-title">Tipo de contenido top</div><div class="muted2">${topTipo[0][0]}</div></div>
+        <div style="text-align:right"><div class="ib-score green">${fmt(Math.round(topTipo[0][1].v/topTipo[0][1].n))}</div><div class="muted2">vistas/post</div></div>
+      </div>
+      <div class="ib-body">El contenido tipo <strong>${topTipo[0][0]}</strong> supera al resto. De cada 5 piezas, crea al menos 2-3 de este tipo. ${topTipo.length>1?`Evita sobre-invertir en "${topTipo[topTipo.length-1][0]}".`:''}</div>
+    </div>`:''}
+    <div class="insight-big">
+      <div class="ib-top"><div class="ib-icon">📊</div><div><div class="ib-title">Engagement rate</div><div class="muted2">Likes + Coments + Guardados</div></div>
+        <div style="text-align:right"><div class="ib-score ${engRate>=5?'green':engRate>=2?'amber':'red'}">${engRate.toFixed(1)}%</div><div class="muted2">rate</div></div>
+      </div>
+      <div class="ib-body">${engRate>=5?'Excelente engagement. Mantén los CTAs directos y preguntas al final.':engRate>=2?'Engagement medio. Agrega una pregunta directa en el último 10% de cada video.':'Engagement bajo. Usa CTAs tipo: "Comenta SI si quieres la guía completa".'}</div>
+    </div>`;
+
+  // Hooks detectados
+  const hooksMap={};
+  mets.forEach(m=>{
+    const h=(m.hookUsado||m.titulo||'').substring(0,50);
+    if(!hooksMap[h])hooksMap[h]={v:0,n:0};
+    hooksMap[h].v+=m.vistas||0;hooksMap[h].n++;
+  });
+  const topHooks=Object.entries(hooksMap).sort((a,b)=>(b[1].v/b[1].n)-(a[1].v/a[1].n)).slice(0,5);
+  if(topHooks.length){
+    document.getElementById('insightHooksCard').style.display='block';
+    document.getElementById('insightHooksList').innerHTML=topHooks.map(([h,d],i)=>`
+      <div class="rrow">
+        <span class="rpill ${i===0?'rw':i<=2?'ro':'rl'}">#${i+1}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h)}</div>
+          <div class="muted2">${fmt(Math.round(d.v/d.n))} vistas prom · ${d.n} uso${d.n>1?'s':''}</div>
+        </div>
+        <div style="font-size:11px;color:var(--green);font-family:'JetBrains Mono',monospace">${fmt(d.v)} total</div>
+      </div>`).join('');
+  }
+
+  // Qué repetir
+  document.getElementById('insightRepetir').innerHTML=topPerf.length?topPerf.map(m=>`
+    <div class="recom-card">
+      <div class="recom-title">✅ ${esc(m.titulo||'Sin título')}</div>
+      <div class="recom-body">${m.plat} · ${fmt(m.vistas||0)} vistas · ${m.tipo} · ${autoScore(m)==='high'?'🔥 Alto rendimiento':'📈 Buen rendimiento'}${m.aprendizaje?'<br>→ '+esc(m.aprendizaje):''}</div>
+      <div class="clone-banner"><span class="clone-icon">🔁</span><span class="clone-text">Crear variación de este contenido</span><button class="btn btn-sm btn-cyan" onclick="clonarDesdeInsight('${esc(m.titulo||'')}')">Clonar</button></div>
+    </div>`).join(''):'<div class="empty">Sin datos suficientes.</div>';
+
+  // Qué evitar
+  document.getElementById('insightEvitar').innerHTML=lowPerf.length?lowPerf.map(m=>`
+    <div class="recom-card red">
+      <div class="recom-title">❌ ${esc(m.titulo||'Sin título')}</div>
+      <div class="recom-body">${m.plat} · ${fmt(m.vistas||0)} vistas · ${m.tipo}. ${m.vistas<500?'Alcance muy bajo. Evita este formato/plataforma por ahora.':'Rendimiento bajo del promedio.'}${m.aprendizaje?'<br>→ '+esc(m.aprendizaje):''}</div>
+    </div>`).join(''):'<div class="empty">Sin datos suficientes.</div>';
+
+  // Horarios (si hay fechas)
+  const withDate=mets.filter(m=>m.fecha);
+  if(withDate.length>=3){
+    const byDow={};
+    withDate.forEach(m=>{const d=new Date(m.fecha).getDay();if(!byDow[d]){byDow[d]={v:0,n:0};}byDow[d].v+=m.vistas||0;byDow[d].n++;});
+    const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    const topDay=Object.entries(byDow).sort((a,b)=>(b[1].v/b[1].n)-(a[1].v/a[1].n))[0];
+    document.getElementById('insightHorarios').innerHTML=`
+      <div class="recom-card cyan"><div class="recom-title">📅 Mejor día detectado: ${dias[topDay[0]]}</div><div class="recom-body">Promedio de ${fmt(Math.round(topDay[1].v/topDay[1].n))} vistas. Prioriza publicar los ${dias[topDay[0]]}.</div></div>
+      <div style="display:flex;gap:6px;margin-top:8px">${Object.entries(byDow).sort((a,b)=>a[0]-b[0]).map(([d,v])=>`<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">${dias[d]}</div><div style="height:${Math.round(v.v/v.n/Math.max(1,...Object.values(byDow).map(x=>x.v/x.n))*50)}px;background:${parseInt(d)===parseInt(topDay[0])?'var(--cyan)':'var(--border2)'};border-radius:3px;min-height:4px"></div></div>`).join('')}</div>`;
+  }else{
+    document.getElementById('insightHorarios').innerHTML='<div class="empty">Registra al menos 5 resultados para ver patrones de horario.</div>';
+  }
+}
+
+function clonarDesdeInsight(titulo){
+  const idx=st.contenidoListo.findIndex(x=>x.titulo===titulo);
+  if(idx>=0){goTab('listo');setTimeout(()=>abrirClonar(idx),300);}
+  else toast('Pieza no encontrada en Listo. Genera primero.','var(--amber)');
+}
+
+// ─── RESULTADOS AVANZADO ──────────────────────────────────────────────────
+function renderResultados(){
+  const mets=st.metricas||[];
+  // Llenar selector — todos los contenidos
+  const sel=document.getElementById('resSelectContent');
+  sel.innerHTML='<option value="">— Selecciona pieza —</option>'+
+    st.contenidoListo.map((c,i)=>`<option value="${i}">${esc(c.titulo)}</option>`).join('');
+
+  const totalV=mets.reduce((a,m)=>a+(m.vistas||0),0);
+  const totalL=mets.reduce((a,m)=>a+(m.likes||0),0);
+  document.getElementById('resKpiTotal').textContent=mets.length;
+  document.getElementById('resKpiVistas').textContent=fmt(totalV);
+  document.getElementById('resKpiLikes').textContent=fmt(totalL);
+
+  // Barras por plataforma
+  const byPlat={};
+  mets.forEach(m=>{if(!byPlat[m.plat])byPlat[m.plat]={v:0,n:0};byPlat[m.plat].v+=m.vistas||0;byPlat[m.plat].n++;});
+  const maxV=Math.max(1,...Object.values(byPlat).map(x=>x.v/x.n));
+  document.getElementById('resPlatBars').innerHTML=!Object.keys(byPlat).length?'<div class="empty">Sin datos aún.</div>':
+    Object.entries(byPlat).sort((a,b)=>b[1].v/b[1].n-a[1].v/a[1].n).map(([p,d])=>`
+    <div class="res-bar-row">
+      <div class="res-bar-label">${p}</div>
+      <div class="res-bar-track"><div class="res-bar-fill" style="width:${Math.round(d.v/d.n/maxV*100)}%;background:${p==='Instagram'?'#e1306c':p==='Facebook'?'#1877F2':p==='LinkedIn'?'#0A66C2':'var(--text)'}"></div></div>
+      <div class="res-bar-val">${fmt(Math.round(d.v/d.n))}/post</div>
+    </div>`).join('');
+
+  // Barras por tipo
+  const byT={};
+  mets.forEach(m=>{if(!byT[m.tipo])byT[m.tipo]={v:0,n:0};byT[m.tipo].v+=m.vistas||0;byT[m.tipo].n++;});
+  const maxT=Math.max(1,...Object.values(byT).map(x=>x.v/x.n));
+  document.getElementById('resTipoBars').innerHTML=!Object.keys(byT).length?'<div class="empty">Sin datos aún.</div>':
+    Object.entries(byT).sort((a,b)=>b[1].v/b[1].n-a[1].v/a[1].n).map(([t,d])=>`
+    <div class="res-bar-row">
+      <div class="res-bar-label">${t}</div>
+      <div class="res-bar-track"><div class="res-bar-fill" style="width:${Math.round(d.v/d.n/maxT*100)}%;background:${t==='viral'?'var(--purple)':t==='ia'?'var(--blue)':t==='negocios'?'var(--amber)':t==='autoridad'?'var(--green)':'var(--red)'}"></div></div>
+      <div class="res-bar-val">${fmt(Math.round(d.v/d.n))}/post</div>
+    </div>`).join('');
+
+  // Recomendaciones
+  const recos=genRecos(mets,byPlat,byT);
+  document.getElementById('resRecomendaciones').innerHTML=recos.length?recos.map(r=>`<div class="recom-card ${r.lvl||''}"><div class="recom-title">${r.t}</div><div class="recom-body">${r.b}</div></div>`).join(''):'<div class="empty">Registra al menos 2 resultados para ver recomendaciones.</div>';
+
+  // Historial
+  document.getElementById('resHistorial').innerHTML=!mets.length?'<div class="empty">Sin métricas registradas aún.</div>':
+    mets.slice().reverse().map((m,i)=>{
+      const sc=autoScore(m);
+      return`<div class="rrow">
+        <span class="rpill ${sc==='high'?'rw':sc==='mid'?'ro':'rl'}">${sc==='high'?'🔥 TOP':sc==='mid'?'📈 OK':'😐 BAJO'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.titulo||'Sin título')}</div>
+          <div class="muted2">${m.plat} · ${fmt(m.vistas||0)} vistas · ${m.likes||0}❤️ · ${m.coments||0}💬 · ${m.guardados||0}🔖${m.aprendizaje?' · '+m.aprendizaje:''}</div>
+        </div>
+        <button class="btn btn-sm" onclick="eliminarMetrica(${mets.length-1-i})" style="opacity:.4">✕</button>
+      </div>`;
+    }).join('');
+}
+
+function genRecos(mets,byPlat,byT){
+  if(mets.length<2)return[];
+  const r=[];
+  const topP=Object.entries(byPlat).sort((a,b)=>b[1].v/b[1].n-a[1].v/a[1].n)[0];
+  if(topP)r.push({t:`🚀 Duplica en ${topP[0]}`,b:`${topP[0]} promedia ${fmt(Math.round(topP[1].v/topP[1].n))} vistas/post. Pon el 40% de tu contenido ahí.`,lvl:''});
+  const engRate=mets.reduce((a,m)=>a+((m.likes||0)/(Math.max(m.vistas||1,1))),0)/mets.length;
+  if(engRate<0.03)r.push({t:'⚠️ Engagement bajo — mejora el CTA',b:`Tasa actual: ${(engRate*100).toFixed(1)}%. Agrega "Comenta [X] si quieres la guía completa" al final de cada video.`,lvl:'amber'});
+  const guardRate=mets.reduce((a,m)=>a+((m.guardados||0)/(Math.max(m.vistas||1,1))),0)/mets.length;
+  if(guardRate>0.03)r.push({t:'🔖 Tu contenido se guarda mucho',b:`${(guardRate*100).toFixed(1)}% de guardados/vistas. El algoritmo favorece este comportamiento. Crea más contenido "de referencia" tipo checklists y frameworks.`,lvl:''});
+  if(mets.length>=5){
+    const recent=mets.slice(-3).reduce((a,m)=>a+(m.vistas||0),0)/3;
+    const old=mets.slice(0,3).reduce((a,m)=>a+(m.vistas||0),0)/3;
+    if(recent>old*1.2)r.push({t:'📈 Tendencia positiva',b:`Últimas piezas: ${fmt(Math.round(recent))} vistas prom vs ${fmt(Math.round(old))} antes. +${Math.round((recent/old-1)*100)}%. Mantén el ritmo.`,lvl:''});
+    else if(recent<old*0.8)r.push({t:'📉 Alcance bajando',b:'Últimas piezas rinden menos. Prueba un formato diferente o cambia de plataforma por 1 semana.',lvl:'red'});
+  }
+  return r;
+}
+
+function guardarMetrica(){
+  const idxSel=parseInt(document.getElementById('resSelectContent').value);
+  const item=!isNaN(idxSel)?st.contenidoListo[idxSel]:null;
+  const titulo=item?item.titulo:'Sin título';
+  const plat=item?(item.pubPlat||item.plataforma||'TikTok'):'TikTok';
+  const tipo=item?(item.tipo||'viral'):'viral';
+  const hookUsado=item?(item.hookA||''):'';
+  const vistas=parseInt(document.getElementById('resVistas').value)||0;
+  const likes=parseInt(document.getElementById('resLikes').value)||0;
+  const coments=parseInt(document.getElementById('resComents').value)||0;
+  const guardados=parseInt(document.getElementById('resGuardados').value)||0;
+  const aprendizaje=document.getElementById('resAprendizaje').value.trim();
+  if(!vistas&&!likes&&!coments&&!guardados){toast('Ingresa al menos una métrica','var(--amber)');return;}
+  if(!st.metricas)st.metricas=[];
+  st.metricas.push({titulo,plat,tipo,hookUsado,vistas,likes,coments,guardados,aprendizaje,fecha:Date.now()});
+  save();
+  ['resVistas','resLikes','resComents','resGuardados','resAprendizaje'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('resSelectContent').value='';
+  renderResultados();toast('✅ Métrica guardada');
+}
+function eliminarMetrica(i){st.metricas.splice(i,1);save();renderResultados();}
+function limpiarMetricas(){if(confirm('¿Limpiar historial de métricas?')){st.metricas=[];save();renderResultados();}}
+
+// ─── AUDITORÍA ─────────────────────────────────────────────────────────────
+function selAuditPlat(p,el){auditPlatSel=p;document.querySelectorAll('.audit-plat-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');}
+
+async function ejecutarAuditoria(){
+  if(!st.apiKey){toast('Configura API Anthropic primero','var(--red)');return;}
+  const usuario=document.getElementById('auditUsuario').value||'usuario';
+  const seguidores=document.getElementById('auditSeguidores').value||'0';
+  const pubs=document.getElementById('auditPublicaciones').value||'0';
+  const likes=document.getElementById('auditLikes').value||'0';
+  const comentarios=document.getElementById('auditComentarios').value||'0';
+  const tipoContenido=document.getElementById('auditTipoContenido').value;
+  const estrategia=document.getElementById('auditEstrategia').value;
+  const notas=document.getElementById('auditNotas').value;
+  const btn=document.getElementById('btnAudit');
+  btn.disabled=true;btn.textContent='⏳ Analizando...';
+  document.getElementById('auditResultado').style.display='block';
+  document.getElementById('auditResultado').innerHTML=`<div class="audit-loading"><div class="al-spinner"></div><div class="al-text">Analizando ${auditPlatSel}...</div><div class="al-sub">30-40 segundos</div></div>`;
+  const prompt=`Eres experto en marketing de redes sociales. Analiza este perfil y genera un diagnóstico completo.
+PERFIL: Plataforma: ${auditPlatSel}, Usuario: ${usuario}, Seguidores: ${seguidores}, Posts/30d: ${pubs}, Likes prom: ${likes}, Coments prom: ${comentarios}, Tipo: ${tipoContenido}, Estrategia: ${estrategia}, Notas: ${notas}
+Responde SOLO con JSON:
+{"puntuacion_general":0-100,"puntuacion_contenido":0-100,"puntuacion_engagement":0-100,"puntuacion_consistencia":0-100,"resumen":"2-3 oraciones","engagement_rate":"X%","frecuencia_actual":"texto","benchmark":"texto","criticos":[{"titulo":"","descripcion":"","accion":""}],"advertencias":[{"titulo":"","descripcion":"","accion":""}],"positivos":[{"titulo":"","descripcion":""}],"plan_30_dias":[{"semana":1,"objetivo":"","acciones":["","",""]},{"semana":2,"objetivo":"","acciones":["","",""]},{"semana":3,"objetivo":"","acciones":["","",""]},{"semana":4,"objetivo":"","acciones":["","",""]}],"kpis":[{"nombre":"","valor_actual":"","objetivo_30d":""}]}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':st.apiKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    const text=data.content[0].text.trim().replace(/^```json\s*/,'').replace(/\s*```$/,'').trim();
+    renderAuditoria(JSON.parse(text),usuario);
+  }catch(err){
+    document.getElementById('auditResultado').innerHTML=`<div class="card" style="border-color:var(--red)"><div style="color:var(--red);font-weight:700;margin-bottom:6px">Error</div><div class="muted">${esc(err.message)}</div></div>`;
+  }
+  btn.disabled=false;btn.textContent='🔍 Ejecutar Auditoría con IA';
+}
+
+function scoreColor(s){return s>=75?'good':s>=50?'mid':'bad';}
+function renderAuditoria(rep,usuario){
+  const planHtml=(rep.plan_30_dias||[]).map(s=>`<div style="background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:11px 13px;margin-bottom:7px"><div style="font-size:12px;font-weight:700;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:4px">SEMANA ${s.semana}</div><div style="font-size:13px;font-weight:600;margin-bottom:6px">${esc(s.objetivo)}</div>${(s.acciones||[]).map(a=>`<div style="font-size:12px;color:var(--text2);padding:3px 0;border-bottom:0.5px solid var(--border)">→ ${esc(a)}</div>`).join('')}</div>`).join('');
+  document.getElementById('auditResultado').innerHTML=`
+    <div class="card" style="border-color:var(--green)">
+      <div class="rsb" style="margin-bottom:14px">
+        <div><div class="card-title" style="margin:0">Auditoría: ${esc(auditPlatSel)}</div><div class="muted2">@${esc(usuario)}</div></div>
+        <button class="btn btn-sm" onclick="resetAuditoria()">Nueva auditoría</button>
+      </div>
+      <div class="audit-score">
+        <div class="ascore"><div class="ascore-val ${scoreColor(rep.puntuacion_general)}">${rep.puntuacion_general}</div><div class="ascore-label">General</div></div>
+        <div class="ascore"><div class="ascore-val ${scoreColor(rep.puntuacion_contenido)}">${rep.puntuacion_contenido}</div><div class="ascore-label">Contenido</div></div>
+        <div class="ascore"><div class="ascore-val ${scoreColor(rep.puntuacion_engagement)}">${rep.puntuacion_engagement}</div><div class="ascore-label">Engagement</div></div>
+      </div>
+      <div class="audit-recap">
+        <div class="audit-recap-title">Diagnóstico</div>
+        <div style="font-size:13px;line-height:1.65;color:var(--text2)">${esc(rep.resumen)}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px">
+          <div><div class="muted2">Engagement rate</div><div style="font-size:14px;font-weight:700;margin-top:3px">${esc(rep.engagement_rate)}</div></div>
+          <div><div class="muted2">Frecuencia</div><div style="font-size:14px;font-weight:700;margin-top:3px">${esc(rep.frecuencia_actual)}</div></div>
+        </div>
+        <div style="margin-top:8px"><div class="muted2">Benchmark</div><div style="font-size:12px;color:var(--text2);margin-top:3px;line-height:1.5">${esc(rep.benchmark)}</div></div>
+      </div>
+      ${(rep.criticos||[]).length?`<div class="audit-section"><div class="audit-section-title">Problemas críticos</div>${rep.criticos.map(f=>`<div class="audit-finding af-critical"><div class="af-icon">🚨</div><div class="af-body"><div class="af-title">${esc(f.titulo)}</div><div class="af-desc">${esc(f.descripcion)}</div><div style="font-size:11px;font-weight:700;margin-top:5px;font-family:'JetBrains Mono',monospace">→ ${esc(f.accion)}</div></div></div>`).join('')}</div>`:''}
+      ${(rep.advertencias||[]).length?`<div class="audit-section"><div class="audit-section-title">Áreas a mejorar</div>${rep.advertencias.map(f=>`<div class="audit-finding af-warning"><div class="af-icon">⚠️</div><div class="af-body"><div class="af-title">${esc(f.titulo)}</div><div class="af-desc">${esc(f.descripcion)}</div><div style="font-size:11px;font-weight:700;margin-top:5px;font-family:'JetBrains Mono',monospace">→ ${esc(f.accion)}</div></div></div>`).join('')}</div>`:''}
+      ${(rep.positivos||[]).length?`<div class="audit-section"><div class="audit-section-title">Puntos fuertes</div>${rep.positivos.map(f=>`<div class="audit-finding af-good"><div class="af-icon">✅</div><div class="af-body"><div class="af-title">${esc(f.titulo)}</div><div class="af-desc">${esc(f.descripcion)}</div></div></div>`).join('')}</div>`:''}
+      <div class="audit-section"><div class="audit-section-title">Plan 30 días</div>${planHtml}</div>
+      <button class="btn btn-green btn-full" style="margin-top:6px" onclick="exportarAuditoria()">Exportar reporte</button>
+    </div>`;
+  document.getElementById('auditResultado').style.display='block';
+}
+function resetAuditoria(){document.getElementById('auditResultado').style.display='none';document.getElementById('auditResultado').innerHTML='';document.getElementById('btnAudit').disabled=false;document.getElementById('btnAudit').textContent='🔍 Ejecutar Auditoría con IA';}
+function exportarAuditoria(){const el=document.getElementById('auditResultado');if(!el)return;const txt=el.innerText;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));a.download=`auditoria-${auditPlatSel}.txt`;a.click();}
+
+// ─── HOY ───────────────────────────────────────────────────────────────────
+function renderHoy(){
+  const tot=totalSeg(),falt=Math.max(META-tot,0),rn=rNec(),dr=diasRest();
+  const b=document.getElementById('cdBanner');
+  b.className='countdown'+(onTrack()?' ok':'');
+  b.innerHTML=`<div><div class="cd-label">${onTrack()?'Vas en buen ritmo':'Alerta: necesitas acelerar'}</div><div class="cd-sub">${onTrack()?'Mantén la frecuencia':'Necesitas +'+rn+'/día'}</div></div><div style="text-align:right"><div class="cd-num">${dr}</div><div class="cd-sub">días</div></div>`;
+  document.getElementById('segTotal').textContent=tot.toLocaleString('es');
+  document.getElementById('segFaltan').textContent=falt.toLocaleString('es');
+  document.getElementById('ritmoHoy').textContent='+'+st.ritmo+'/día';
+  document.getElementById('ritmoNec').textContent='+'+rn+'/día';
+  document.getElementById('ritmoEst').textContent=onTrack()?'En ritmo':'Insuficiente';
+  const d=new Date();
+  document.getElementById('fechaHoy').textContent=d.toLocaleDateString('es-PE',{weekday:'short',day:'numeric',month:'short'});
+  const done=st.acciones.filter(a=>a.done).length;
+  document.getElementById('compCount').textContent=done+'/'+st.acciones.length;
+  document.getElementById('accionesList').innerHTML=st.acciones.map(a=>`
+    <div class="action ${a.i}">
+      <div class="chk ${a.done?'done':''}" onclick="togAcc(${a.id})">${a.done?'✓':''}</div>
+      <div class="abody">
+        <div class="atitle" style="${a.done?'text-decoration:line-through;opacity:.35':''}">${a.t}</div>
+        <div class="areason">${a.r}</div>
+        <div class="ameta">
+          <span class="badge ${a.i==='high'?'bh':a.i==='medium'?'bm':'bl'}">Impacto ${a.i==='high'?'alto':a.i==='medium'?'medio':'bajo'}</span>
+          ${a.p.map(pl=>`<span class="badge ${pl==='TikTok'?'btk':pl==='Instagram'?'big':pl==='Facebook'?'bfb':pl==='LinkedIn'?'bli':'bl'}">${pl}</span>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+function togAcc(id){const a=st.acciones.find(x=>x.id===id);if(a){a.done=!a.done;save();renderHoy();}}
+function guardarSeg(){
+  const fb=parseInt(document.getElementById('inFb').value),ig=parseInt(document.getElementById('inIg').value),tk=parseInt(document.getElementById('inTk').value),li=parseInt(document.getElementById('inLi').value),ri=parseInt(document.getElementById('inRitmo').value);
+  if(!isNaN(fb))st.plataformas.facebook=fb;if(!isNaN(ig))st.plataformas.instagram=ig;if(!isNaN(tk))st.plataformas.tiktok=tk;if(!isNaN(li))st.plataformas.linkedin=li;if(!isNaN(ri))st.ritmo=ri;
+  st.acciones=DEF.acciones.map(a=>({...a}));save();renderHeader();renderHoy();
+  ['inFb','inIg','inTk','inLi','inRitmo'].forEach(id=>document.getElementById(id).value='');
+  toast('Progreso guardado');
+}
+
+// ─── MOTOR ─────────────────────────────────────────────────────────────────
+function renderMotor(){
+  const mets=st.metricas||[];
+  const byPlat={};mets.forEach(m=>{if(!byPlat[m.plat])byPlat[m.plat]={v:0,n:0};byPlat[m.plat].v+=m.vistas||0;byPlat[m.plat].n++;});
+  const bp=Object.entries(byPlat).sort((a,b)=>b[1].v/b[1].n-a[1].v/a[1].n)[0];
+  const byT={};mets.forEach(m=>{if(!byT[m.tipo])byT[m.tipo]={v:0,n:0};byT[m.tipo].v+=m.vistas||0;byT[m.tipo].n++;});
+  const bt=Object.entries(byT).sort((a,b)=>b[1].v/b[1].n-a[1].v/a[1].n)[0];
+  document.getElementById('diagList').innerHTML=`
+    <div class="insight"><div class="dot dg"></div><div class="itext"><strong>Plataforma prioritaria:</strong> ${bp?bp[0]:'Facebook'} — mayor promedio de vistas.</div></div>
+    <div class="insight"><div class="dot dg"></div><div class="itext"><strong>Contenido efectivo:</strong> ${bt?bt[0]:'IA'} con ${bt?fmt(Math.round(bt[1].v/bt[1].n)):'-'} vistas prom.</div></div>
+    <div class="insight"><div class="dot da"></div><div class="itext"><strong>Hooks con número</strong> generan +40% retención. Aplicar en 70% del contenido.</div></div>
+    <div class="insight"><div class="dot dr"></div><div class="itext"><strong>Alerta:</strong> Ritmo +${st.ritmo}/día. Necesitas +${rNec()}/día para la meta.</div></div>
+    ${st.nbKey?`<div class="insight"><div class="dot dc"></div><div class="itext"><strong>🍌 NanoBanana activo</strong> — Motor visual premium listo para imágenes y videos.</div></div>`:''}`;
+  document.getElementById('freqGrid').innerHTML=[{plat:'Facebook',freq:'2 Reels/día',tipo:'Viral + Educativo'},{plat:'TikTok',freq:'2-3 videos/día',tipo:'Viral + IA'},{plat:'Instagram',freq:'1-2 Reels/día',tipo:'Reutiliza TikTok'},{plat:'LinkedIn',freq:'4 posts/sem',tipo:'Autoridad'}].map(f=>`<div class="fitem"><div class="fplat">${f.plat}</div><div class="fval">${f.freq}</div><div class="ftipo">${f.tipo}</div></div>`).join('');
+}
+
+// ─── IA ────────────────────────────────────────────────────────────────────
+function renderIa(){
+  const byPlat={};st.resultados.forEach(r=>{if(!byPlat[r.plat])byPlat[r.plat]={t:0,w:0};byPlat[r.plat].t++;if(r.res==='win')byPlat[r.plat].w++;});
+  const bp=Object.entries(byPlat).sort((a,b)=>(b[1].w/b[1].t)-(a[1].w/a[1].t))[0];
+  document.getElementById('patronesList').innerHTML=`
+    <div class="insight"><div class="dot dg"></div><div class="itext">Mejor plataforma: <strong>${bp?bp[0]:'Facebook'}</strong> — ${bp?Math.round(bp[1].w/bp[1].t*100):75}% tasa de éxito.</div></div>
+    <div class="insight"><div class="dot dg"></div><div class="itext">Contenido de IA tiene mayor alcance promedio. Mínimo 3 piezas/semana.</div></div>
+    <div class="insight"><div class="dot da"></div><div class="itext">Reels con subtítulos superan posts de texto por 4x en Facebook.</div></div>
+    <div class="insight"><div class="dot da"></div><div class="itext">${st.resultados.length} resultados en sistema IA. ${(st.metricas||[]).length} métricas en sistema nuevo.</div></div>`;
+  document.getElementById('historialList').innerHTML=!st.resultados.length?'<div class="empty">Registra tu primer resultado.</div>':
+    st.resultados.map(r=>`<div class="rrow"><span class="rpill ${r.res==='win'?'rw':r.res==='ok'?'ro':'rl'}">${r.res==='win'?'ÉXITO':r.res==='ok'?'REGULAR':'FALLÓ'}</span><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.c}</div><div class="muted2">${r.plat} · ${r.tipo} · ${r.reach.toLocaleString('es')} alcance${r.apr?' · '+r.apr:''}</div></div></div>`).join('');
+}
+function guardarResultado(){
+  const c=document.getElementById('rCont').value;if(!c)return;
+  st.resultados.unshift({c,plat:document.getElementById('rPlat').value,tipo:document.getElementById('rTipo').value,reach:parseInt(document.getElementById('rReach').value)||0,res:document.getElementById('rResult').value,apr:document.getElementById('rApr').value});
+  closeModal('mResultado');save();renderIa();
+}
+
+// ─── MODALES ───────────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.remove('mhidden');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).classList.add('mhidden');document.body.style.overflow='';}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
+function crearExp(){const v=document.getElementById('abVar').value,va=document.getElementById('abVa').value,vb=document.getElementById('abVb').value;if(!v||!va||!vb)return;st.experimentos.unshift({id:Date.now(),v,va,vb,plat:document.getElementById('abPlat').value,tipo:document.getElementById('abTipo').value,est:'activo',g:null,sa:0,sb:0});closeModal('mAb');save();}
+function confirmarExp(){const e=st.experimentos.find(x=>x.id===expPend);if(!e)return;e.sa=parseInt(document.getElementById('ceA').value)||0;e.sb=parseInt(document.getElementById('ceB').value)||0;e.g=e.sa>=e.sb?'A':'B';e.est='completado';closeModal('mCerrar');save();}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+renderHeader();
+renderIdeas();
+if(st.apiKey){document.getElementById('keyStatus').textContent='✅ Clave de Anthropic activa';}
+if(st.openaiKey){document.getElementById('openaiKeyStatus').textContent='✅ Clave de OpenAI activa';}
+if(st.nbKey){document.getElementById('nbKeyStatus').textContent='✅ Clave NanoBanana activa';}
+</script>
+</body>
+</html>
