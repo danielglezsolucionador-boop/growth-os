@@ -1,0 +1,2298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Growth OS — Sistema de Crecimiento</title>
+<meta name="theme-color" content="#F9FAFB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F9FAFB;--surface:#FFFFFF;--surface2:#F3F4F6;--surface3:#E9EAEC;
+  --border:#E5E7EB;--border2:#D1D5DB;
+  --text:#111827;--muted:#6B7280;--muted2:#9CA3AF;
+  --accent:#2563EB;--accent2:#3B82F6;
+  --green:#16a34a;--amber:#d97706;--red:#dc2626;--cyan:#0891b2;
+  --green-bg:#f0fdf4;--amber-bg:#fffbeb;--red-bg:#fef2f2;--cyan-bg:#ecfeff;
+  --r:12px;--r2:10px;--r3:16px;
+  --shadow:0 4px 12px rgba(0,0,0,0.05);--shadow-md:0 8px 24px rgba(0,0,0,0.08);
+}
+html{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:16px;line-height:1.6;-webkit-text-size-adjust:100%}
+body{min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Plus Jakarta Sans',sans-serif;line-height:1.2}
+
+/* ── AUTH ── */
+#auth-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:1000;overflow-y:auto;padding:40px 20px}
+.auth-wrap{max-width:440px;margin:0 auto}
+.auth-logo{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:8px;color:var(--text)}
+.auth-logo span{color:var(--accent)}
+.auth-tagline{font-size:14px;color:var(--muted);margin-bottom:36px}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:28px;box-shadow:var(--shadow-md)}
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--border)}
+.auth-tab{flex:1;padding:12px;text-align:center;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s ease}
+.auth-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.auth-form{display:none}.auth-form.active{display:block}
+.auth-sep{text-align:center;margin:18px 0;position:relative}
+.auth-sep::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--border)}
+.auth-sep span{background:var(--surface);padding:0 12px;font-size:12px;color:var(--muted);position:relative}
+.google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 20px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);transition:all 0.2s ease;font-weight:500}
+.google-btn:hover{border-color:var(--accent);background:var(--surface2);box-shadow:0 2px 8px rgba(37,99,235,0.08)}
+.auth-error{background:var(--red-bg);border:1px solid rgba(220,38,38,.25);color:var(--red);padding:12px 14px;border-radius:var(--r2);font-size:14px;margin-bottom:12px;display:none}
+.auth-success{background:var(--green-bg);border:1px solid rgba(22,163,74,.25);color:var(--green);padding:12px 14px;border-radius:var(--r2);font-size:14px;margin-bottom:12px;display:none}
+.avatar-ring{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;flex-shrink:0}
+.user-menu{position:relative}
+.user-dropdown{position:absolute;right:0;top:calc(100% + 8px);background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:8px;min-width:210px;z-index:300;display:none;box-shadow:var(--shadow-md)}
+.user-dropdown.open{display:block}
+.udrop-item{padding:11px 14px;border-radius:var(--r2);font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--muted);transition:all 0.15s ease}
+.udrop-item:hover{background:var(--surface2);color:var(--text)}
+.udrop-sep{height:1px;background:var(--border);margin:4px 0}
+
+/* ── LAYOUT PRINCIPAL ── */
+#app{display:flex;flex-direction:column;min-height:100vh}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100;gap:10px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.logo{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:17px;letter-spacing:-0.5px;color:var(--text);flex-shrink:0}
+.logo span{color:var(--accent)}
+#stepper{display:flex;align-items:center;gap:0;flex:1;justify-content:center;min-width:0}
+.step-item{display:flex;align-items:center;cursor:pointer;flex-shrink:0}
+.step-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;border:2px solid var(--border2);color:var(--muted);transition:all 0.2s ease;flex-shrink:0}
+.step-label{font-size:12px;color:var(--muted);margin:0 8px;transition:all 0.2s ease;white-space:nowrap}
+.step-item.active .step-num{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,0.3)}
+.step-item.active .step-label{color:var(--text);font-weight:600}
+.step-item.done .step-num{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.step-sep{width:20px;height:1px;background:var(--border2);flex-shrink:0}
+.step-sep.done{background:var(--green)}
+#main{flex:1;padding:28px 20px;max-width:1100px;width:100%;margin:0 auto}
+
+/* ── SCREENS ── */
+.screen{display:none;animation:fadeIn .3s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.card+.card{margin-top:14px}
+
+/* ── FORMULARIOS ── */
+label{font-size:13px;color:var(--muted);font-weight:500;display:block;margin-bottom:7px}
+input[type=text],input[type=email],input[type=password],input[type=number],textarea,select{
+  width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);
+  padding:13px 16px;color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:all 0.2s ease;
+  -webkit-appearance:none;appearance:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+textarea{resize:vertical;min-height:90px}
+.input-eye{position:relative}
+.input-eye input{padding-right:48px}
+.eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px;line-height:1;-webkit-tap-highlight-color:transparent}
+.input-group{position:relative;display:flex;align-items:center}
+.input-group input{padding-right:110px;border-radius:var(--r2)}
+.input-group-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%)}
+.key-masked{letter-spacing:0.2em;font-family:monospace;color:var(--muted)}
+
+/* ── BOTONES ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:var(--r2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;cursor:pointer;border:none;transition:all 0.2s ease;white-space:nowrap;-webkit-tap-highlight-color:transparent;min-height:46px}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,0.25)}
+.btn-primary:hover{background:#1D4ED8;box-shadow:0 4px 12px rgba(37,99,235,0.35);transform:translateY(-1px)}
+.btn-primary:active{transform:scale(.97)}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--surface2);border-color:var(--border2)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid transparent;padding:10px 16px;font-size:14px}
+.btn-ghost:hover{background:var(--surface2);color:var(--text);border-color:var(--border)}
+.btn-sm{padding:10px 16px;font-size:13px;min-height:38px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-full{width:100%}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+.btn-cyan{background:var(--cyan-bg);color:var(--cyan);border:1px solid rgba(8,145,178,.2)}
+.btn-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+
+/* ── CHIPS ── */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{padding:9px 15px;border-radius:20px;font-size:14px;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:var(--surface);transition:all 0.2s ease;user-select:none;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;font-weight:500}
+.chip:active{transform:scale(.96)}
+.chip.active{border-color:var(--accent);color:var(--accent);background:rgba(37,99,235,.06)}
+
+/* ── GRID RESPONSIVE ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+.badge-amber{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(217,119,6,.2)}
+.badge-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+.badge-purple{background:rgba(37,99,235,.08);color:var(--accent);border:1px solid rgba(37,99,235,.2)}
+.badge-cyan{background:var(--cyan-bg);color:var(--cyan);border:1px solid rgba(8,145,178,.2)}
+
+/* ── PROGRESO ── */
+.progress-wrap{background:var(--surface2);border-radius:4px;height:6px;overflow:hidden}
+.progress-bar{height:6px;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s ease}
+
+/* ── IDEAS ── */
+.idea-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:18px;cursor:pointer;transition:all 0.2s ease;position:relative;box-shadow:var(--shadow)}
+.idea-card:hover{border-color:var(--border2);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.idea-card:active{transform:scale(.98)}
+.idea-card.selected{border-color:var(--accent);background:rgba(37,99,235,.03);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.idea-card .sel-indicator{position:absolute;top:14px;right:14px;width:24px;height:24px;border-radius:50%;border:2px solid var(--border2);transition:all 0.2s ease;display:flex;align-items:center;justify-content:center}
+.idea-card.selected .sel-indicator{background:var(--accent);border-color:var(--accent)}
+.idea-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;margin-bottom:5px;padding-right:32px;line-height:1.3;color:var(--text)}
+.idea-angle{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.4}
+.idea-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ideas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-top:16px}
+
+/* ── SCORING SEMAFORO MEJORADO ── */
+.sem-label{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:10px;border:1px solid}
+.sem-green{background:var(--green-bg);color:var(--green);border-color:rgba(22,163,74,.2)}
+.sem-amber{background:var(--amber-bg);color:var(--amber);border-color:rgba(217,119,6,.2)}
+.sem-red{background:var(--red-bg);color:var(--red);border-color:rgba(220,38,38,.2)}
+.sem-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── SCORING LEGEND GRANDE ── */
+.scoring-legend{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.sl-item{flex:1;min-width:160px;border-radius:var(--r2);padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
+.sl-item.sl-green{background:var(--green-bg);border:1px solid rgba(22,163,74,.2)}
+.sl-item.sl-amber{background:var(--amber-bg);border:1px solid rgba(217,119,6,.2)}
+.sl-item.sl-red{background:var(--red-bg);border:1px solid rgba(220,38,38,.2)}
+.sl-dot-big{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.sl-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:14px;margin-bottom:3px}
+.sl-sub{font-size:12px;color:var(--muted);line-height:1.4}
+
+/* ── CONTENIDO GENERADO ── */
+.content-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;margin-bottom:18px;box-shadow:var(--shadow)}
+.content-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);flex-wrap:wrap;gap:10px}
+.content-body{padding:20px;font-size:14px;line-height:1.7;color:var(--text)}
+.copy-area{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:12px;white-space:pre-wrap;word-break:break-word;font-size:14px;line-height:1.7}
+.copy-area .ca-header{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.9px;margin-bottom:10px;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;justify-content:space-between}
+
+/* ── PLATFORM TABS ── */
+.platform-tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:var(--r2);margin-bottom:20px}
+.ptab{flex:1;padding:11px 8px;text-align:center;border-radius:8px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;cursor:pointer;transition:all 0.2s ease;color:var(--muted);min-height:44px;display:flex;align-items:center;justify-content:center}
+.ptab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,0.08)}
+
+/* ── CALENDAR ── */
+.day-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.day-header{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+
+/* ── LOADER ── */
+.loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px;gap:16px}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader p{color:var(--muted);font-size:15px;text-align:center}
+
+/* ── SECTION HEADER ── */
+.sec-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:14px;flex-wrap:wrap}
+.sec-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;line-height:1.1;color:var(--text)}
+.sec-sub{font-size:14px;color:var(--muted);margin-top:5px}
+
+/* ── NAV ACTIONS ── */
+.nav-actions{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-top:32px;padding-top:20px;border-top:1px solid var(--border);flex-wrap:wrap}
+
+/* ── ALERTS ── */
+.alert{padding:14px 18px;border-radius:var(--r2);font-size:14px;margin-bottom:16px;line-height:1.5}
+.alert-info{background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.15);color:var(--accent)}
+.alert-success{background:var(--green-bg);border:1px solid rgba(22,163,74,.2);color:var(--green)}
+.alert-warn{background:var(--amber-bg);border:1px solid rgba(217,119,6,.2);color:var(--amber)}
+
+/* ── COPY BTN ── */
+.copy-btn{font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;background:var(--surface2);color:var(--muted);border:1px solid var(--border);transition:all 0.2s ease;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;min-height:32px}
+.copy-btn:hover{color:var(--text);border-color:var(--border2);background:var(--surface2)}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.filter-bar .btn{min-height:38px}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty .e-icon{font-size:40px;margin-bottom:12px}
+.empty p{font-size:15px}
+
+/* ── SECONDARY NAV ── */
+.secondary-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.snav-btn{font-size:13px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s ease;min-height:38px;-webkit-tap-highlight-color:transparent;font-weight:500}
+.snav-btn:hover{color:var(--text);border-color:var(--border2);background:var(--surface2)}
+.snav-btn.hl{border-color:rgba(37,99,235,.3);color:var(--accent);background:rgba(37,99,235,.04)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(4px)}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3) var(--r3) 0 0;max-width:680px;width:100%;max-height:92vh;overflow-y:auto;padding:28px;padding-bottom:40px;box-shadow:0 -8px 40px rgba(0,0,0,0.12)}
+.modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:19px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:10px;color:var(--text)}
+.modal-close{margin-left:auto;background:var(--surface2);border:1px solid var(--border);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:18px;flex-shrink:0;transition:all 0.2s ease}
+.modal-close:hover{color:var(--text);background:var(--surface2)}
+
+/* ── RANGE ── */
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;background:var(--surface2);border-radius:3px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 2px 6px rgba(37,99,235,0.3)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid rgba(22,163,74,.3);color:var(--green);padding:12px 22px;border-radius:var(--r2);font-size:14px;z-index:999;transition:.3s;pointer-events:none;white-space:nowrap;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:var(--shadow-md)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── WELCOME ── */
+#welcome-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.wlc-badge{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);padding:6px 16px;border-radius:20px;margin-bottom:28px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700}
+.wlc-title{font-size:clamp(28px,7vw,52px);font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:14px;color:var(--text)}
+.wlc-title span{color:var(--accent)}
+.wlc-sub{font-size:16px;color:var(--muted);max-width:400px;line-height:1.7;margin-bottom:36px}
+.wlc-steps{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:36px;max-width:480px}
+.ws-i{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:14px;color:var(--muted);display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.ws-n{width:24px;height:24px;border-radius:50%;background:rgba(37,99,235,.1);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;flex-shrink:0}
+
+/* ── DASHBOARD ── */
+#dashboard-section{display:none}
+.dash-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:10px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.dash-logo{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;letter-spacing:-.5px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.dash-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.dash-body{padding:28px 20px 60px;max-width:1100px;margin:0 auto}
+.dash-sec{margin-bottom:32px}
+.dash-sec-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.dash-sec-title::before{content:'';display:block;width:3px;height:14px;background:var(--accent);border-radius:2px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;text-align:center;box-shadow:var(--shadow);transition:all 0.2s ease}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.stat-v{font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;color:var(--text)}
+.stat-l{font-size:13px;color:var(--muted);margin-top:5px}
+.stat-trend{font-size:12px;margin-top:4px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600}
+.trend-up{color:var(--green)}.trend-dn{color:var(--red)}.trend-flat{color:var(--muted)}
+.action-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;transition:all 0.2s ease;box-shadow:var(--shadow)}
+.action-block:hover{box-shadow:var(--shadow-md)}
+.action-block.p-high{border-left:3px solid var(--red)}
+.action-block.p-med{border-left:3px solid var(--amber)}
+.action-block.p-low{border-left:3px solid var(--muted2)}
+.action-block.done-block{opacity:.4}
+.ab-num{width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;flex-shrink:0;margin-top:2px}
+.ab-body{flex:1;min-width:0}
+.ab-t{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;line-height:1.3;color:var(--text)}
+.ab-w{font-size:13px;color:var(--muted);line-height:1.5}
+.ab-chk{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;min-width:26px}
+.ab-chk.done{background:var(--green);border-color:var(--green)}
+.actions-progress{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:var(--shadow)}
+.ap-label{font-size:13px;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between}
+.pattern-r{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+.pattern-r:last-child{border-bottom:none}
+.pr-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.pr-g{background:var(--green)}.pr-a{background:var(--amber)}.pr-r{background:var(--red)}
+.pr-txt{font-size:14px;color:var(--muted);line-height:1.6}
+.pr-txt strong{color:var(--text)}
+.insight-msg{border-radius:var(--r2);padding:14px 16px;font-size:14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.im-win{background:var(--green-bg);border:1px solid rgba(22,163,74,.15);color:var(--text)}
+.im-warn{background:var(--amber-bg);border:1px solid rgba(217,119,6,.15);color:var(--text)}
+.im-tip{background:rgba(37,99,235,.05);border:1px solid rgba(37,99,235,.15);color:var(--text)}
+.im-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.cq-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:15px;margin-bottom:10px;cursor:pointer;transition:all 0.2s ease;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:var(--shadow)}
+.cq-item:hover{border-color:var(--accent);background:rgba(37,99,235,.02);box-shadow:var(--shadow-md)}
+.cq-t{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;margin-bottom:3px;color:var(--text)}
+.cq-p{font-size:12px;color:var(--muted);margin-top:2px}
+.cq-h{font-size:13px;color:var(--muted2);margin-top:5px;font-style:italic;line-height:1.4}
+.dash-ptabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.dpt{padding:10px 16px;border-radius:20px;font-size:14px;cursor:pointer;border:1.5px solid var(--border);color:var(--muted);background:var(--surface);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;transition:all 0.2s ease;min-height:42px}
+.dpt.active{border-color:var(--accent);color:var(--accent);background:rgba(37,99,235,.06)}
+.mi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mi-f{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.mi-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;margin-bottom:6px}
+.mi-i{background:transparent;border:none;outline:none;font-size:20px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;color:var(--text);width:100%;min-height:36px}
+.no-data-p{background:rgba(37,99,235,.05);border:1px dashed rgba(37,99,235,.25);border-radius:var(--r2);padding:14px;text-align:center;font-size:14px;color:var(--accent);margin-bottom:14px}
+
+/* ── API CONFIG ── */
+.api-provider{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;transition:all 0.2s ease;box-shadow:var(--shadow)}
+.api-provider:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}
+.api-provider-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.api-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.api-provider-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;color:var(--text)}
+.api-provider-desc{font-size:13px;color:var(--muted);margin-top:2px}
+.api-status{margin-left:auto;font-size:12px;padding:4px 11px;border-radius:20px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap}
+.api-status-active{background:var(--green-bg);color:var(--green)}
+.api-status-missing{background:var(--surface2);color:var(--muted2)}
+.api-key-display{font-family:monospace;font-size:13px;color:var(--muted);background:var(--surface2);padding:8px 12px;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+/* ── AYUDA (ICONO LUPA) ── */
+.help-btn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:13px;cursor:pointer;transition:all 0.2s ease;margin-left:6px;flex-shrink:0}
+.help-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(37,99,235,.08)}
+.help-panel{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-top:10px;display:none}
+.help-panel.open{display:block}
+.help-panel h4{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;margin-bottom:10px;color:var(--accent)}
+.help-step{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)}
+.help-step:last-child{border-bottom:none}
+.hs-n{width:22px;height:22px;border-radius:50%;background:rgba(37,99,235,.1);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-family:'Plus Jakarta Sans',sans-serif}
+.hs-txt{font-size:13px;color:var(--muted2);line-height:1.5}
+.hs-txt a{color:var(--accent);text-decoration:none}
+.hs-txt a:hover{text-decoration:underline}
+
+/* ── MODO CREACIÓN ── */
+.modo-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px}
+.modo-card{border-radius:var(--r);padding:20px;cursor:pointer;transition:all 0.2s ease;text-align:center;border:2px solid var(--border);background:var(--surface);position:relative;box-shadow:var(--shadow)}
+.modo-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.modo-card:active{transform:scale(.97)}
+.modo-card.selected{border-width:2px}
+.mc-icon{font-size:32px;margin-bottom:10px}
+.mc-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:15px;margin-bottom:6px;color:var(--text)}
+.mc-desc{font-size:12px;color:var(--muted);line-height:1.4}
+.mc-tag{position:absolute;top:10px;right:10px;font-size:10px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;padding:3px 8px;border-radius:10px}
+.modo-1{border-color:var(--green);}.modo-1.selected{background:var(--green-bg)}
+.modo-1 .mc-tag{background:var(--green-bg);color:var(--green)}
+.modo-2{border-color:var(--amber);}.modo-2.selected{background:var(--amber-bg)}
+.modo-2 .mc-tag{background:var(--amber-bg);color:var(--amber)}
+.modo-3{border-color:var(--cyan);}.modo-3.selected{background:var(--cyan-bg)}
+.modo-3 .mc-tag{background:var(--cyan-bg);color:var(--cyan)}
+
+/* ── UPLOAD ZONA ── */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:28px;text-align:center;cursor:pointer;transition:all 0.2s ease;margin-bottom:16px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(37,99,235,.03)}
+.upload-zone input{display:none}
+.upload-icon{font-size:36px;margin-bottom:10px}
+.upload-label{font-size:15px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:5px;color:var(--text)}
+.upload-sub{font-size:13px;color:var(--muted)}
+.upload-preview{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.up-file{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px;font-size:13px;display:flex;align-items:center;gap:8px}
+.up-rm{cursor:pointer;color:var(--red);margin-left:4px;font-size:16px;line-height:1}
+
+/* ── GENERACIÓN MULTIMODAL ── */
+.gen-section{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.gen-section h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.gen-result-img{border-radius:var(--r2);overflow:hidden;margin-top:14px;display:none}
+.gen-result-img img{width:100%;max-width:400px;border-radius:var(--r2);border:1px solid var(--border)}
+
+/* ── AVATAR ── */
+.avatar-preview{width:88px;height:88px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:36px;background:var(--surface2);overflow:hidden;margin:0 auto 16px}
+.avatar-preview img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.avatar-option{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;transition:all 0.2s ease;text-align:center;box-shadow:var(--shadow)}
+.avatar-option:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}
+.avatar-option.selected{border-color:var(--accent);background:rgba(37,99,235,.04)}
+.avatar-option .ao-icon{font-size:30px;margin-bottom:8px}
+.avatar-option .ao-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;margin-bottom:4px;color:var(--text)}
+.avatar-option .ao-desc{font-size:12px;color:var(--muted);line-height:1.4}
+
+/* ── PROGRESO MODAL ── */
+.weekly-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:10px}
+.wday{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;font-size:12px}
+.wday-name{color:var(--muted);margin-bottom:4px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600}
+.wday-dot{width:26px;height:26px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif}
+.wday-active .wday-dot{background:var(--green);color:#fff}
+.wday-miss .wday-dot{background:var(--surface2);color:var(--muted2)}
+.streak-bar{display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 18px;margin-top:12px}
+.streak-num{font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:800;line-height:1;color:var(--amber)}
+.score-ring{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;border:2px solid}
+
+/* ── MODO EVALUACIÓN ── */
+.eval-result{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-top:16px}
+.eval-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.eval-item:last-child{border-bottom:none}
+
+/* ─────────────── RESPONSIVE MOBILE-FIRST ─────────────── */
+@media(max-width:680px){
+  /* Layout */
+  #main{padding:16px 14px}
+  .dash-body{padding:16px 14px 60px}
+  #topbar{padding:10px 14px}
+  .dash-topbar{padding:10px 14px}
+
+  /* Grids → columna */
+  .grid2,.grid3,.g4,.modo-grid,.mi-grid{grid-template-columns:1fr}
+  .modo-grid{grid-template-columns:1fr}
+
+  /* Stepper: solo números */
+  .step-label{display:none}
+  .step-sep{width:10px}
+  .step-num{width:28px;height:28px;font-size:12px}
+
+  /* Ideas */
+  .ideas-grid{grid-template-columns:1fr}
+
+  /* Scoring legend vertical */
+  .scoring-legend{flex-direction:column}
+
+  /* Modales desde abajo */
+  .modal-box{border-radius:var(--r3) var(--r3) 0 0;max-height:95vh}
+  .modal-overlay{align-items:flex-end}
+
+  /* Botones más grandes en mobile */
+  .btn{min-height:50px;font-size:15px}
+  .btn-sm{min-height:42px;font-size:14px}
+
+  /* Texto legible */
+  html{font-size:15px}
+  .sec-title{font-size:22px}
+  .stat-v{font-size:24px}
+
+  /* Nav actions en stack */
+  .nav-actions{flex-direction:column-reverse;align-items:stretch}
+  .nav-actions .btn{width:100%;justify-content:center}
+  .nav-actions .btn-ghost{order:1}
+
+  /* Content header */
+  .content-header{flex-direction:column;align-items:flex-start}
+
+  /* Secondary nav compacto */
+  .secondary-nav{gap:4px}
+  .snav-btn{padding:7px 9px;font-size:12px;min-height:34px}
+
+  /* Dashboard topbar */
+  .dash-topbar > div:last-child{width:100%;overflow-x:auto;padding-bottom:4px}
+
+  /* Chips más cómodas */
+  .chip{padding:10px 14px;font-size:14px}
+
+  /* Modo cards */
+  .modo-card{padding:16px 14px}
+  .mc-icon{font-size:26px}
+  .mc-title{font-size:14px}
+
+  /* Upload zone */
+  .upload-zone{padding:20px 14px}
+
+  /* Plataform tabs */
+  .ptab{padding:10px 6px;font-size:13px}
+}
+
+@media(max-width:400px){
+  .wlc-title{font-size:26px}
+  .logo{font-size:15px}
+}
+/* ── TRIAL EXPIRADO ── */
+#trial-expired{display:none;position:fixed;inset:0;background:var(--bg);z-index:2000;overflow-y:auto;padding:40px 20px;text-align:center}
+.trial-wrap{max-width:480px;margin:0 auto;padding-top:60px}
+.trial-icon{font-size:56px;margin-bottom:20px}
+.trial-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;margin-bottom:12px;line-height:1.2;color:var(--text)}
+.trial-sub{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:10px}
+.trial-days{display:inline-block;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;padding:5px 16px;border-radius:20px;background:var(--amber-bg);color:var(--amber);border:1px solid rgba(217,119,6,.3);margin-bottom:32px}
+.trial-cta{background:var(--accent);color:#fff;padding:16px 32px;border-radius:var(--r2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:16px;border:none;cursor:pointer;width:100%;max-width:320px;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 14px;box-shadow:0 4px 14px rgba(37,99,235,0.3)}
+.trial-cta:hover{background:#1D4ED8;transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,0.4)}
+.trial-note{font-size:13px;color:var(--muted2);margin-top:8px}
+.trial-banner{background:var(--amber-bg);border:1px solid rgba(217,119,6,.3);border-radius:var(--r2);padding:10px 16px;font-size:13px;color:var(--amber);text-align:center;margin-bottom:12px;display:none}
+.trial-banner strong{color:var(--amber)}
+
+/* ── PROMO CARDS ── */
+.promo-idea-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.promo-tag{font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);background:rgba(37,99,235,.08);display:inline-block;padding:3px 10px;border-radius:20px;margin-bottom:12px}
+.promo-content-block{margin-bottom:10px}
+.promo-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-family:'Plus Jakarta Sans',sans-serif}
+.promo-text{font-size:13px;color:var(--text);line-height:1.65;background:var(--surface2);border-radius:var(--r2);padding:10px 12px}
+.promo-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<!-- ════ TRIAL EXPIRADO ════ -->
+<div id="trial-expired">
+  <div class="trial-wrap">
+    <div class="trial-icon">⏰</div>
+    <div class="trial-title">Tu prueba gratuita ha terminado</div>
+    <div class="trial-sub">Gracias por probar Growth OS durante 7 días.<br>Para seguir usando el sistema y todo tu contenido generado, activa tu acceso completo.</div>
+    <div class="trial-days" id="trial-days-label">Prueba de 7 días finalizada</div>
+    <button class="trial-cta" onclick="contactarActivar()">
+      <span>✉️</span> Contactar para activar acceso
+    </button>
+    <div class="trial-note">Tus datos están guardados y seguros. No se eliminará nada.</div>
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
+      <div style="font-size:13px;color:var(--muted2)">¿Ya tienes acceso activo?
+        <button class="btn btn-ghost btn-sm" onclick="activarAccesoManual()" style="color:var(--accent);font-size:13px">Ingresar código →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ AUTH ════ -->
+<div id="auth-screen">
+  <div class="auth-wrap">
+    <div style="margin-bottom:32px">
+      <div class="auth-logo">Growth <span>OS</span></div>
+      <div class="auth-tagline">Sistema profesional de crecimiento en redes sociales</div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="authSwitchTab('login')">Iniciar sesión</div>
+        <div class="auth-tab" onclick="authSwitchTab('register')">Crear cuenta</div>
+      </div>
+      <div class="auth-form active" id="af-login">
+        <div id="auth-login-err" class="auth-error"></div>
+        <div style="margin-bottom:14px"><label>Correo electrónico</label><input type="email" id="login-email" placeholder="tu@correo.com" autocomplete="email"></div>
+        <div style="margin-bottom:18px"><label>Contraseña</label><div class="input-eye"><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"><button class="eye-btn" onclick="toggleEye('login-pass',this)" type="button">👁</button></div></div>
+        <button class="btn btn-primary btn-full" onclick="doLogin()">Entrar →</button>
+        <div class="auth-sep"><span>o</span></div>
+        <button class="google-btn" onclick="doGoogleLogin()"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.3 0 24 0 14.6 0 6.5 5.5 2.6 13.5l7.8 6.1C12.4 13.4 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.5-.1-3-.4-4.5H24v8.5h12.7c-.5 2.9-2.1 5.3-4.5 6.9l7.1 5.5c4.1-3.8 6.5-9.4 6.5-16.4z"/><path fill="#FBBC05" d="M10.4 28.4c-.5-1.5-.8-3-.8-4.4s.3-2.9.8-4.4l-7.8-6.1A23.9 23.9 0 000 24c0 3.9.9 7.5 2.6 10.7l7.8-6.3z"/><path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.5-5.7l-7.1-5.5c-2 1.4-4.5 2.2-8.4 2.2-6.2 0-11.5-4-13.6-9.6l-7.8 6.3C6.5 42.5 14.6 48 24 48z"/></svg>Continuar con Google</button>
+        <div style="text-align:center;margin-top:14px"><button class="btn btn-ghost btn-sm" onclick="authSwitchTab('register')" style="font-size:13px;color:var(--muted)">¿Sin cuenta? Regístrate gratis →</button></div>
+      </div>
+      <div class="auth-form" id="af-register">
+        <div id="auth-reg-err" class="auth-error"></div>
+        <div id="auth-reg-ok" class="auth-success"></div>
+        <div class="grid2"><div><label>Nombre</label><input type="text" id="reg-name" placeholder="Tu nombre"></div><div><label>Correo</label><input type="email" id="reg-email" placeholder="tu@correo.com"></div></div>
+        <div style="margin:14px 0"><label>Contraseña <span style="color:var(--muted2);font-size:12px">(mín. 8 caracteres)</span></label><div class="input-eye"><input type="password" id="reg-pass" placeholder="••••••••"><button class="eye-btn" onclick="toggleEye('reg-pass',this)" type="button">👁</button></div></div>
+        <div style="margin-bottom:18px"><label>Confirmar contraseña</label><div class="input-eye"><input type="password" id="reg-pass2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()"><button class="eye-btn" onclick="toggleEye('reg-pass2',this)" type="button">👁</button></div></div>
+        <button class="btn btn-primary btn-full" onclick="doRegister()">Crear cuenta →</button>
+        <div class="auth-sep"><span>o</span></div>
+        <button class="google-btn" onclick="doGoogleLogin()"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.3 0 24 0 14.6 0 6.5 5.5 2.6 13.5l7.8 6.1C12.4 13.4 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.5-.1-3-.4-4.5H24v8.5h12.7c-.5 2.9-2.1 5.3-4.5 6.9l7.1 5.5c4.1-3.8 6.5-9.4 6.5-16.4z"/><path fill="#FBBC05" d="M10.4 28.4c-.5-1.5-.8-3-.8-4.4s.3-2.9.8-4.4l-7.8-6.1A23.9 23.9 0 000 24c0 3.9.9 7.5 2.6 10.7l7.8-6.3z"/><path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.5-5.7l-7.1-5.5c-2 1.4-4.5 2.2-8.4 2.2-6.2 0-11.5-4-13.6-9.6l-7.8 6.3C6.5 42.5 14.6 48 24 48z"/></svg>Registrarse con Google</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--muted2)">🔒 Tus datos y claves de API están cifrados y son privados</div>
+  </div>
+</div>
+
+<!-- ════ WELCOME ════ -->
+<div id="welcome-overlay">
+  <div class="wlc-badge">Sistema de crecimiento en redes</div>
+  <h1 class="wlc-title">Vamos a crear tu<br><span>sistema de crecimiento</span></h1>
+  <p class="wlc-sub">Auditoría → Ideas → Contenido → Publicación diaria</p>
+  <div class="wlc-steps">
+    <div class="ws-i"><div class="ws-n">1</div>Auditoría de tu perfil</div>
+    <div class="ws-i"><div class="ws-n">2</div>25 ideas con IA</div>
+    <div class="ws-i"><div class="ws-n">3</div>Contenido por plataforma</div>
+    <div class="ws-i"><div class="ws-n">4</div>Dashboard diario</div>
+  </div>
+  <button class="btn btn-primary" style="font-size:17px;padding:16px 40px" onclick="startOnboarding()">Empezar auditoría →</button>
+  <div style="margin-top:16px;font-size:14px;color:var(--muted)">¿Ya tienes contenido? <button class="btn btn-ghost btn-sm" onclick="skipToDash()" style="color:var(--accent)">Ir al dashboard →</button></div>
+</div>
+
+<!-- ════ APP SHELL ════ -->
+<div id="app">
+  <div id="topbar">
+    <div class="logo">Growth <span>OS</span> <span style="font-size:11px;color:var(--muted);font-weight:400;font-family:'DM Sans',sans-serif;margin-left:4px">v1.1</span></div>
+    <div id="stepper">
+      <div class="step-item active" id="st1" onclick="goStep(1)"><div class="step-num">1</div><span class="step-label">Auditoría</span></div>
+      <div class="step-sep" id="sep1"></div>
+      <div class="step-item" id="st2" onclick="goStep(2)"><div class="step-num">2</div><span class="step-label">Ideas</span></div>
+      <div class="step-sep" id="sep2"></div>
+      <div class="step-item" id="st3" onclick="goStep(3)"><div class="step-num">3</div><span class="step-label">Modo</span></div>
+      <div class="step-sep" id="sep3"></div>
+      <div class="step-item" id="st4" onclick="goStep(4)"><div class="step-num">4</div><span class="step-label">Contenido</span></div>
+      <div class="step-sep" id="sep4"></div>
+      <div class="step-item" id="st5" onclick="goStep(5)"><div class="step-num">5</div><span class="step-label">Publicar</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <div class="secondary-nav">
+        <button class="snav-btn" onclick="openModal('modal-metrics')">📊 Métricas</button>
+        <button class="snav-btn" onclick="openModal('modal-audit-adv')">🔍 Pro</button>
+        <button class="snav-btn" onclick="openModal('modal-api')">🔑 APIs</button>
+        <button class="snav-btn hl" id="btn-go-dash" onclick="goToDashboard()" style="display:none">🏠 Dashboard</button>
+      </div>
+      <div class="user-menu" id="user-menu-wrap" style="display:none">
+        <div class="avatar-ring" id="user-avatar-top" onclick="toggleUserMenu()">?</div>
+        <div class="user-dropdown" id="user-dropdown">
+          <div style="padding:8px 14px 4px;font-size:13px;color:var(--muted2)" id="user-email-drop">—</div>
+          <div class="udrop-sep"></div>
+          <div class="udrop-item" onclick="openModal('modal-profile')">👤 Mi perfil y avatar</div>
+          <div class="udrop-item" onclick="openModal('modal-api')">🔑 Mis APIs</div>
+          <div class="udrop-item" onclick="openModal('modal-progress')">📈 Mi progreso</div>
+          <div class="udrop-sep"></div>
+          <div class="udrop-item" onclick="doLogout()" style="color:var(--red)">⎋ Cerrar sesión</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="main">
+
+    <!-- ── PANTALLA 1: AUDITORÍA ── -->
+    <div class="screen active" id="screen1">
+      <div class="sec-header">
+        <div><div class="sec-title">Auditoría inicial</div><div class="sec-sub">Define tu perfil. Esto alimenta todo el sistema.</div></div>
+        <div id="audit-progress-indicator" style="display:none;text-align:right">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:5px" id="audit-pct">0%</div>
+          <div class="progress-wrap" style="width:110px"><div class="progress-bar" id="audit-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card"><label>Tu nicho o industria *</label><input type="text" id="a-niche" placeholder="Ej. marketing digital, fitness, finanzas personales..." oninput="updateAuditProgress()"></div>
+        <div class="card"><label>Objetivo principal *</label><div class="chips" id="chips-objetivo">
+          <span class="chip" onclick="toggleChip(this,'objetivo')">Crecer seguidores</span>
+          <span class="chip" onclick="toggleChip(this,'objetivo')">Vender productos</span>
+          <span class="chip" onclick="toggleChip(this,'objetivo')">Generar interacción</span>
+          <span class="chip" onclick="toggleChip(this,'objetivo')">Construir autoridad</span>
+        </div></div>
+      </div>
+      <div class="card" style="margin-top:14px"><label>Plataformas activas *</label><div class="chips" id="chips-platforms">
+        <span class="chip" onclick="toggleChipMulti(this,'platforms')">TikTok</span>
+        <span class="chip" onclick="toggleChipMulti(this,'platforms')">Instagram</span>
+        <span class="chip" onclick="toggleChipMulti(this,'platforms')">Facebook</span>
+        <span class="chip" onclick="toggleChipMulti(this,'platforms')">LinkedIn</span>
+        <span class="chip" onclick="toggleChipMulti(this,'platforms')">YouTube Shorts</span>
+      </div></div>
+      <div class="grid2" style="margin-top:14px">
+        <div class="card">
+          <label>Seguidores actuales (total aproximado)</label>
+          <input type="number" id="a-followers" placeholder="Ej. 1.200" oninput="updateAuditProgress()">
+          <div style="margin-top:14px"><label>Nivel de experiencia</label><div class="chips" id="chips-level">
+            <span class="chip" onclick="toggleChip(this,'level')">Principiante</span>
+            <span class="chip" onclick="toggleChip(this,'level')">Intermedio</span>
+            <span class="chip" onclick="toggleChip(this,'level')">Avanzado</span>
+          </div></div>
+        </div>
+        <div class="card">
+          <label>Frecuencia de publicación posible</label>
+          <div class="chips" id="chips-freq">
+            <span class="chip" onclick="toggleChip(this,'freq')">1–2 por semana</span>
+            <span class="chip" onclick="toggleChip(this,'freq')">3–4 por semana</span>
+            <span class="chip" onclick="toggleChip(this,'freq')">A diario</span>
+            <span class="chip" onclick="toggleChip(this,'freq')">Varias al día</span>
+          </div>
+          <div style="margin-top:14px"><label>Tiempo disponible</label><div class="chips" id="chips-time">
+            <span class="chip" onclick="toggleChip(this,'time')">30 min/día</span>
+            <span class="chip" onclick="toggleChip(this,'time')">1–2 hrs/día</span>
+            <span class="chip" onclick="toggleChip(this,'time')">+3 hrs/día</span>
+          </div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px"><label>Tipo de contenido preferido *</label><div class="chips" id="chips-content-type">
+        <span class="chip" onclick="toggleChipMulti(this,'content-type')">Educativo</span>
+        <span class="chip" onclick="toggleChipMulti(this,'content-type')">Viral / entretenimiento</span>
+        <span class="chip" onclick="toggleChipMulti(this,'content-type')">Storytelling</span>
+        <span class="chip" onclick="toggleChipMulti(this,'content-type')">Venta directa</span>
+        <span class="chip" onclick="toggleChipMulti(this,'content-type')">Detrás de cámaras</span>
+        <span class="chip" onclick="toggleChipMulti(this,'content-type')">Reels y shorts</span>
+      </div></div>
+      <div class="card" style="margin-top:14px"><label>Estilo de comunicación *</label><div class="chips" id="chips-style">
+        <span class="chip" onclick="toggleChip(this,'style')">Directo y contundente</span>
+        <span class="chip" onclick="toggleChip(this,'style')">Educativo y formal</span>
+        <span class="chip" onclick="toggleChip(this,'style')">Cercano y casual</span>
+        <span class="chip" onclick="toggleChip(this,'style')">Inspiracional</span>
+        <span class="chip" onclick="toggleChip(this,'style')">Humorístico</span>
+        <span class="chip" onclick="toggleChip(this,'style')">Provocador</span>
+      </div></div>
+      <div class="card" style="margin-top:14px"><label>Tu propuesta de valor</label><textarea id="a-value" placeholder="¿Qué problema resuelves? ¿Qué ofreces? ¿A quién le hablas?" oninput="updateAuditProgress()"></textarea></div>
+      <div class="card" style="margin-top:14px"><label>Referentes o competidores (opcional)</label><input type="text" id="a-competitors" placeholder="Ej. @garyvee, @alexhormozi, @midudev..."></div>
+      <div class="nav-actions">
+        <div style="font-size:14px;color:var(--muted)" id="audit-status">Completa los campos obligatorios (*) para continuar</div>
+        <button class="btn btn-primary" id="btn-audit-next" onclick="completeAudit()" disabled>Generar ideas →</button>
+      </div>
+    </div>
+
+    <!-- ── PANTALLA 2: IDEAS ── -->
+    <div class="screen" id="screen2">
+      <div class="sec-header">
+        <div><div class="sec-title">Motor de ideas</div><div class="sec-sub" id="ideas-sub">Ideas personalizadas para tu nicho</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="regenerateIdeas()">↺ Regenerar</button>
+          <button class="btn btn-primary btn-sm" onclick="goToModo()">Seleccionar →</button>
+        </div>
+      </div>
+
+      <!-- LEYENDA SEMÁFORO MEJORADA -->
+      <div class="scoring-legend">
+        <div class="sl-item sl-green">
+          <div class="sl-dot-big" style="background:var(--green);color:var(--green)"></div>
+          <div><div class="sl-title" style="color:var(--green)">🟢 Haz esto primero</div><div class="sl-sub">Score 80–100 · Alto potencial viral · Bajo esfuerzo</div></div>
+        </div>
+        <div class="sl-item sl-amber">
+          <div class="sl-dot-big" style="background:var(--amber);color:var(--amber)"></div>
+          <div><div class="sl-title" style="color:var(--amber)">🟡 Opcional</div><div class="sl-sub">Score 50–79 · Potencial medio · Vale la pena probar</div></div>
+        </div>
+        <div class="sl-item sl-red">
+          <div class="sl-dot-big" style="background:var(--red);color:var(--red)"></div>
+          <div><div class="sl-title" style="color:var(--red)">🔴 Experimental</div><div class="sl-sub">Score 0–49 · Riesgo alto · Solo si ya tienes base sólida</div></div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <button class="btn btn-ghost btn-sm active" onclick="filterIdeas('all',this)">Todas</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterIdeas('green',this)">🟢 Primero</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterIdeas('amber',this)">🟡 Opcional</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterIdeas('red',this)">🔴 Experimental</button>
+      </div>
+      <div id="ideas-loader" class="loader"><div class="spinner"></div><p>Generando ideas para tu nicho...</p></div>
+      <div class="ideas-grid" id="ideas-grid"></div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost" onclick="goStep(1)">← Editar auditoría</button>
+        <button class="btn btn-primary" onclick="goToModo()">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- ── PANTALLA 3: MODO CREACIÓN (NUEVO) ── -->
+    <div class="screen" id="screen3">
+      <div class="sec-header">
+        <div><div class="sec-title">¿Cómo quieres crear?</div><div class="sec-sub">Elige tu modo de trabajo con la IA</div></div>
+        <div id="sel-counter" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:var(--accent)">0 seleccionadas</div>
+      </div>
+
+      <!-- MODO CARDS -->
+      <div class="modo-grid" id="modo-grid">
+        <div class="modo-card modo-1" id="mc-1" onclick="selectModo(1,this)">
+          <div class="mc-tag">IA completa</div>
+          <div class="mc-icon">🚀</div>
+          <div class="mc-title">Hazlo todo por mí</div>
+          <div class="mc-desc">La IA genera idea, hook, guión, caption e imagen automáticamente</div>
+        </div>
+        <div class="modo-card modo-2" id="mc-2" onclick="selectModo(2,this)">
+          <div class="mc-tag">Colaboración</div>
+          <div class="mc-icon">🤝</div>
+          <div class="mc-title">Yo aporto, tú mejoras</div>
+          <div class="mc-desc">Sube tu imagen o idea y la IA la optimiza y mejora</div>
+        </div>
+        <div class="modo-card modo-3" id="mc-3" onclick="selectModo(3,this)">
+          <div class="mc-tag">Evaluación</div>
+          <div class="mc-icon">🔍</div>
+          <div class="mc-title">Yo lo hago, tú evalúas</div>
+          <div class="mc-desc">Sube tu contenido y la IA te dice qué está bien y cómo mejorar</div>
+        </div>
+      </div>
+
+      <!-- IDEAS SELECCIÓN (modo 1 y 2) -->
+      <div id="ideas-selection-wrap">
+        <div class="alert alert-info">Selecciona entre 3 y 10 ideas para generar contenido optimizado por plataforma.</div>
+        <div class="filter-bar">
+          <button class="btn btn-ghost btn-sm active" onclick="filterIdeas('all',this,'sel')">Todas</button>
+          <button class="btn btn-ghost btn-sm" onclick="filterIdeas('green',this,'sel')">🟢 Primero</button>
+          <button class="btn btn-ghost btn-sm" onclick="filterIdeas('amber',this,'sel')">🟡 Opcional</button>
+          <button class="btn btn-ghost btn-sm" onclick="filterIdeas('red',this,'sel')">🔴 Experimental</button>
+        </div>
+        <div class="ideas-grid" id="sel-grid"></div>
+      </div>
+
+      <!-- UPLOAD ZONA (modo 2) -->
+      <div id="upload-wrap" style="display:none;margin-top:16px">
+        <div class="card">
+          <label style="font-size:15px;font-weight:600;margin-bottom:14px;color:var(--text)">Sube tu contenido</label>
+          <div class="upload-zone" onclick="document.getElementById('upload-input').click()" id="drop-zone">
+            <input type="file" id="upload-input" accept="image/*,video/*" multiple onchange="handleUpload(this)">
+            <div class="upload-icon">📁</div>
+            <div class="upload-label">Arrastra aquí o toca para subir</div>
+            <div class="upload-sub">Imágenes y vídeos. La IA los analizará y mejorará.</div>
+          </div>
+          <div class="upload-preview" id="upload-preview"></div>
+          <div style="margin-top:14px"><label>Describe tu idea (opcional)</label><textarea id="upload-desc" placeholder="¿Qué querías comunicar con este contenido?"></textarea></div>
+        </div>
+      </div>
+
+      <!-- EVALUACIÓN ZONA (modo 3) -->
+      <div id="eval-wrap" style="display:none;margin-top:16px">
+        <div class="card">
+          <label style="font-size:15px;font-weight:600;margin-bottom:14px;color:var(--text)">Sube tu contenido para evaluar</label>
+          <div class="upload-zone" onclick="document.getElementById('eval-input').click()">
+            <input type="file" id="eval-input" accept="image/*,video/*" multiple onchange="handleEvalUpload(this)">
+            <div class="upload-icon">🎯</div>
+            <div class="upload-label">Sube el contenido que ya creaste</div>
+            <div class="upload-sub">La IA lo analiza y te dice exactamente cómo mejorarlo</div>
+          </div>
+          <div class="upload-preview" id="eval-preview"></div>
+          <div style="margin-top:14px"><label>Descripción o texto del contenido</label><textarea id="eval-desc" placeholder="Pega aquí el caption, el guión o describe el contenido..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <button class="btn btn-ghost" onclick="goStep(2)">← Ver ideas</button>
+        <button class="btn btn-primary" id="btn-modo-next" onclick="executeModo()" disabled>Crear contenido para hoy →</button>
+      </div>
+    </div>
+
+    <!-- ── PANTALLA 4: CONTENIDO GENERADO ── -->
+    <div class="screen" id="screen4">
+      <div class="sec-header">
+        <div><div class="sec-title">Contenido generado</div><div class="sec-sub" id="content-sub">Hook · Guión · Caption · Hashtags</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="downloadAllContent()">⬇ Descargar todo</button>
+          <button class="btn btn-primary btn-sm" onclick="goStep(5)">Organizar publicación →</button>
+        </div>
+      </div>
+
+      <!-- GENERACIÓN MULTIMODAL -->
+      <div id="multimodal-controls" class="card" style="margin-bottom:20px;display:none">
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;margin-bottom:14px">Generar imagen para el contenido</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Usa tu clave de OpenAI (DALL-E 3) para generar imágenes y miniaturas automáticamente.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <select id="img-target-piece" style="flex:1;min-width:180px"><option>Selecciona una pieza...</option></select>
+          <button class="btn btn-secondary btn-sm" onclick="generateImageForPiece()">🎨 Generar imagen</button>
+        </div>
+        <div class="gen-result-img" id="img-result-wrap"><img id="img-result" alt="Imagen generada"><div style="margin-top:8px;font-size:13px;color:var(--muted)">Imagen generada con DALL-E 3</div></div>
+      </div>
+
+      <div class="platform-tabs">
+        <div class="ptab active" onclick="switchPlatformTab('tiktok',this)">TikTok</div>
+        <div class="ptab" onclick="switchPlatformTab('instagram',this)">Instagram</div>
+        <div class="ptab" onclick="switchPlatformTab('facebook',this)">Facebook</div>
+      </div>
+      <div id="content-loader" class="loader"><div class="spinner"></div><p>Generando contenido adaptado a cada plataforma...</p></div>
+      <div id="content-output"></div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost" onclick="goStep(3)">← Cambiar selección</button>
+        <button class="btn btn-primary" onclick="goStep(5)">Organizar publicación →</button>
+      </div>
+    </div>
+
+    <!-- ── PANTALLA 5: PUBLICACIÓN ── -->
+    <div class="screen" id="screen5">
+      <div class="sec-header">
+        <div><div class="sec-title">Calendario de publicación</div><div class="sec-sub">Organizado por plataforma y día. Listo para ejecutar.</div></div>
+        <button class="btn btn-secondary btn-sm" onclick="downloadCalendar()">⬇ Descargar</button>
+      </div>
+      <div class="platform-tabs">
+        <div class="ptab active" onclick="switchCalTab('tiktok',this)">📱 TikTok</div>
+        <div class="ptab" onclick="switchCalTab('instagram',this)">📸 Instagram</div>
+        <div class="ptab" onclick="switchCalTab('facebook',this)">📘 Facebook</div>
+      </div>
+      <div id="cal-tiktok" class="cal-platform"></div>
+      <div id="cal-instagram" class="cal-platform" style="display:none"></div>
+      <div id="cal-facebook" class="cal-platform" style="display:none"></div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost" onclick="goStep(4)">← Ver contenido</button>
+        <button class="btn btn-primary" onclick="goToDashboard()">Ir al dashboard →</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ════ DASHBOARD ════ -->
+<div id="dashboard-section">
+  <div class="dash-topbar">
+    <div class="dash-logo"><div class="dash-dot"></div>Growth OS</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span id="dash-date" style="font-size:13px;color:var(--muted)"></span>
+      <button class="snav-btn" onclick="openModal('modal-metrics')">📊 Métricas</button>
+      <button class="snav-btn" onclick="openModal('modal-audit-adv')">🔍 Auditoría</button>
+      <button class="snav-btn" onclick="openModal('modal-api')">🔑 APIs</button>
+      <button class="snav-btn hl" onclick="returnToFlow()">🔄 Nuevo ciclo</button>
+      <div class="user-menu" id="dash-user-menu">
+        <div class="avatar-ring" id="dash-avatar" onclick="toggleUserMenuDash()">?</div>
+        <div class="user-dropdown" id="dash-dropdown">
+          <div style="padding:8px 14px 4px;font-size:13px;color:var(--muted2)" id="dash-email-label">—</div>
+          <div class="udrop-sep"></div>
+          <div class="udrop-item" onclick="openModal('modal-profile');closeDropdowns()">👤 Mi perfil y avatar</div>
+          <div class="udrop-item" onclick="openModal('modal-api');closeDropdowns()">🔑 Mis APIs</div>
+          <div class="udrop-item" onclick="openModal('modal-progress');closeDropdowns()">📈 Mi progreso</div>
+          <div class="udrop-sep"></div>
+          <div class="udrop-item" onclick="doLogout()" style="color:var(--red)">⎋ Cerrar sesión</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="dash-body">
+    <!-- BANNER TRIAL -->
+    <div class="trial-banner" id="trial-banner-dash"></div>
+
+    <div class="dash-sec"><div class="dash-sec-title">Resultados del día anterior</div><div id="dash-yday"></div><div id="dash-yday-input"><div class="no-data-p">Sin datos de ayer. Registra los resultados para activar el análisis automático.</div><div class="mi-grid"><div class="mi-f"><div class="mi-l">👁 Vistas</div><input class="mi-i" type="number" id="qm-views" placeholder="0"></div><div class="mi-f"><div class="mi-l">❤️ Likes</div><input class="mi-i" type="number" id="qm-likes" placeholder="0"></div><div class="mi-f"><div class="mi-l">👥 Seguidores +</div><input class="mi-i" type="number" id="qm-followers" placeholder="0"></div></div><div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><select id="qm-platform" style="max-width:160px"><option>TikTok</option><option>Instagram</option><option>Facebook</option><option>LinkedIn</option></select><select id="qm-result" style="max-width:170px"><option value="great">🔥 Muy bien</option><option value="ok" selected>📊 Regular</option><option value="bad">❌ No funcionó</option></select><button class="btn btn-primary btn-sm" onclick="saveQuickMetric()">Guardar</button></div></div></div>
+    <div class="dash-sec"><div class="dash-sec-title">Análisis automático</div><div class="card" id="dash-analysis"></div></div>
+    <div class="dash-sec"><div class="dash-sec-title">Hoy debes hacer esto</div><div id="dash-actions-progress" style="display:none" class="actions-progress"><div class="ap-label"><span>Progreso de hoy</span><span id="ap-label-n">0/0</span></div><div class="progress-wrap"><div class="progress-bar" id="ap-bar" style="width:0%"></div></div></div><div id="dash-actions"></div></div>
+    <div class="dash-sec"><div class="dash-sec-title">Contenido listo para publicar</div><div class="dash-ptabs"><div class="dpt active" onclick="switchDP('tiktok',this)">📱 TikTok</div><div class="dpt" onclick="switchDP('instagram',this)">📸 Instagram</div><div class="dpt" onclick="switchDP('facebook',this)">📘 Facebook</div></div><div id="dp-tiktok"></div><div id="dp-instagram" style="display:none"></div><div id="dp-facebook" style="display:none"></div></div>
+
+    <!-- PARCHE 2: PROMO GROWTH OS -->
+    <div class="dash-sec" id="promo-section">
+      <div class="dash-sec-title">📣 Promociona Growth OS</div>
+      <div class="card" style="border-color:rgba(37,99,235,.2);background:rgba(37,99,235,.03)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:15px;margin-bottom:4px">Comparte tu proceso — crece más rápido</div>
+            <div style="font-size:13px;color:var(--muted)">3 ideas listas para publicar sobre cómo usas la IA para crear contenido diario.</div>
+          </div>
+          <button class="btn btn-sm" style="border-color:rgba(37,99,235,.25);color:var(--accent);background:transparent;flex-shrink:0" onclick="togglePromo()">Minimizar</button>
+        </div>
+        <div id="promo-cards-wrap">
+          <div class="promo-idea-card">
+            <div class="promo-tag">Idea 1 · Video / Reel</div>
+            <div class="promo-content-block">
+              <div class="promo-label">🎣 Hook</div>
+              <div class="promo-text">"Así estoy creciendo en redes sin perder horas de mi día"</div>
+            </div>
+            <div class="promo-content-block">
+              <div class="promo-label">📝 Guión corto</div>
+              <div class="promo-text">¿Sabías que puedes tener tu contenido de toda la semana listo en menos de 30 minutos? Yo lo hago con Growth OS: entro, pongo mi nicho, y la IA me genera hooks, guiones y captions listos para copiar y publicar. Sin bloqueos creativos, sin excusas.</div>
+            </div>
+            <div class="promo-content-block">
+              <div class="promo-label">✍️ Caption</div>
+              <div class="promo-text">Crecimiento en redes sin morir en el intento 🙌 Encontré una herramienta que me genera todo el contenido con IA en minutos. Si quieres saber cómo funciona, comenta "TOOL" y te explico 👇</div>
+            </div>
+            <div class="promo-actions">
+              <button class="btn btn-sm" onclick="copyPromo(0)">📋 Copiar todo</button>
+              <button class="btn btn-sm" onclick="downloadPromo(0)">⬇ Descargar</button>
+            </div>
+          </div>
+
+          <div class="promo-idea-card">
+            <div class="promo-tag">Idea 2 · Story / Post</div>
+            <div class="promo-content-block">
+              <div class="promo-label">🎣 Hook</div>
+              <div class="promo-text">"La IA me hace el contenido diario — esto es lo que publico cada semana"</div>
+            </div>
+            <div class="promo-content-block">
+              <div class="promo-label">📝 Guión corto</div>
+              <div class="promo-text">Antes me pasaba el día pensando qué publicar y al final no publicaba nada. Ahora uso Growth OS: le digo mi nicho, selecciono ideas con puntuación de viralidad, y el sistema me crea el hook, guión y caption adaptado a cada red social. Resultado: publico todos los días sin estrés.</div>
+            </div>
+            <div class="promo-content-block">
+              <div class="promo-label">✍️ Caption</div>
+              <div class="promo-text">Esto es lo que publico cada semana con ayuda de IA 🤖 Un sistema que me genera ideas, hooks y guiones en minutos. ¿Quieres ver cómo funciona? Te paso la app si me escribes al DM 🚀</div>
+            </div>
+            <div class="promo-actions">
+              <button class="btn btn-sm" onclick="copyPromo(1)">📋 Copiar todo</button>
+              <button class="btn btn-sm" onclick="downloadPromo(1)">⬇ Descargar</button>
+            </div>
+          </div>
+
+          <div class="promo-idea-card">
+            <div class="promo-tag">Idea 3 · Reel / TikTok</div>
+            <div class="promo-content-block">
+              <div class="promo-label">🎣 Hook</div>
+              <div class="promo-text">"Esto es lo que publico todos los días con IA — y así me está yendo"</div>
+            </div>
+            <div class="promo-content-block">
+              <div class="promo-label">📝 Guión corto</div>
+              <div class="promo-text">Te muestro mi proceso real: entro a Growth OS cada mañana, elijo las mejores ideas para mi nicho, y en minutos tengo guiones listos para grabar. No improviso. No me bloqueo. Solo grabo y publico. En [X] semanas he pasado de [Y] a [Z] seguidores siguiendo este sistema.</div>
+            </div>
+            <div class="promo-content-block">
+              <div class="promo-label">✍️ Caption</div>
+              <div class="promo-text">Mi proceso de creación de contenido con IA explicado en 60 segundos ⚡ Sin perder tiempo. Sin bloqueo creativo. ¿Te explico cómo lo hago? Comenta "SISTEMA" y te cuento todo 👇 #contenido #IA #crecimientopersonal #redessociales</div>
+            </div>
+            <div class="promo-actions">
+              <button class="btn btn-sm" onclick="copyPromo(2)">📋 Copiar todo</button>
+              <button class="btn btn-sm" onclick="downloadPromo(2)">⬇ Descargar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ MODALS ════ -->
+
+<!-- API CONFIG CON AYUDA -->
+<div class="modal-overlay" id="modal-api" style="display:none" onclick="if(event.target===this)closeModal('modal-api')">
+  <div class="modal-box" style="max-width:700px">
+    <div class="modal-title">🔑 Configuración de APIs <div class="modal-close" onclick="closeModal('modal-api')">×</div></div>
+    <div class="alert alert-info" style="margin-bottom:20px">Cada clave de API pertenece solo a ti. Se cifran antes de guardarse y nunca se muestran en texto plano después de guardar.</div>
+
+    <!-- Anthropic -->
+    <div class="api-provider">
+      <div class="api-provider-header">
+        <div class="api-icon" style="background:rgba(37,99,235,.1)">🤖</div>
+        <div><div class="api-provider-name">Anthropic (Claude)</div><div class="api-provider-desc">Motor principal de texto, ideas y auditorías</div></div>
+        <span class="help-btn" onclick="toggleHelp('help-anthropic')" title="¿Cómo obtener mi clave?">?</span>
+        <div class="api-status" id="api-st-anthropic">No configurada</div>
+      </div>
+      <div class="help-panel" id="help-anthropic">
+        <h4>🔑 Cómo obtener tu clave de Anthropic (Claude)</h4>
+        <div class="help-step"><div class="hs-n">1</div><div class="hs-txt">Ve a <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> e inicia sesión o crea una cuenta</div></div>
+        <div class="help-step"><div class="hs-n">2</div><div class="hs-txt">En el menú lateral ve a <strong>API Keys</strong></div></div>
+        <div class="help-step"><div class="hs-n">3</div><div class="hs-txt">Haz clic en <strong>Create Key</strong>, dale un nombre y copia la clave</div></div>
+        <div class="help-step"><div class="hs-n">4</div><div class="hs-txt">La clave empieza por <code>sk-ant-api03-...</code></div></div>
+      </div>
+      <div class="api-key-display" id="akd-anthropic" style="display:none"><span class="key-masked">••••••••••••••••••••••••</span><button class="btn btn-sm" onclick="clearApiKey('anthropic')">Eliminar</button></div>
+      <div id="api-inp-anthropic"><div class="input-group"><input type="password" id="api-anthropic" placeholder="sk-ant-api03-..."><div class="input-group-btn"><button class="btn btn-sm btn-primary" onclick="saveApiKey('anthropic')">Guardar</button></div></div></div>
+    </div>
+
+    <!-- OpenAI -->
+    <div class="api-provider">
+      <div class="api-provider-header">
+        <div class="api-icon" style="background:rgba(16,163,127,.15)">⚡</div>
+        <div><div class="api-provider-name">OpenAI (ChatGPT / DALL-E 3)</div><div class="api-provider-desc">Motor alternativo + generación de imágenes</div></div>
+        <span class="help-btn" onclick="toggleHelp('help-openai')" title="¿Cómo obtener mi clave?">?</span>
+        <div class="api-status" id="api-st-openai">No configurada</div>
+      </div>
+      <div class="help-panel" id="help-openai">
+        <h4>🔑 Cómo obtener tu clave de OpenAI</h4>
+        <div class="help-step"><div class="hs-n">1</div><div class="hs-txt">Ve a <a href="https://platform.openai.com" target="_blank">platform.openai.com</a> e inicia sesión</div></div>
+        <div class="help-step"><div class="hs-n">2</div><div class="hs-txt">Haz clic en tu perfil (arriba a la derecha) → <strong>API Keys</strong></div></div>
+        <div class="help-step"><div class="hs-n">3</div><div class="hs-txt">Haz clic en <strong>Create new secret key</strong> y copia la clave</div></div>
+        <div class="help-step"><div class="hs-n">4</div><div class="hs-txt">La clave empieza por <code>sk-proj-...</code> o <code>sk-...</code></div></div>
+        <div class="help-step"><div class="hs-n">5</div><div class="hs-txt"><strong>Importante:</strong> necesitas saldo en tu cuenta para usar la API</div></div>
+      </div>
+      <div class="api-key-display" id="akd-openai" style="display:none"><span class="key-masked">••••••••••••••••••••••••</span><button class="btn btn-sm" onclick="clearApiKey('openai')">Eliminar</button></div>
+      <div id="api-inp-openai"><div class="input-group"><input type="password" id="api-openai" placeholder="sk-proj-..."><div class="input-group-btn"><button class="btn btn-sm btn-primary" onclick="saveApiKey('openai')">Guardar</button></div></div></div>
+    </div>
+
+    <!-- Gemini -->
+    <div class="api-provider">
+      <div class="api-provider-header">
+        <div class="api-icon" style="background:rgba(66,133,244,.15)">✨</div>
+        <div><div class="api-provider-name">Google Gemini</div><div class="api-provider-desc">Motor alternativo de generación multimodal</div></div>
+        <span class="help-btn" onclick="toggleHelp('help-gemini')" title="¿Cómo obtener mi clave?">?</span>
+        <div class="api-status" id="api-st-gemini">No configurada</div>
+      </div>
+      <div class="help-panel" id="help-gemini">
+        <h4>🔑 Cómo obtener tu clave de Google Gemini</h4>
+        <div class="help-step"><div class="hs-n">1</div><div class="hs-txt">Ve a <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> e inicia sesión con tu cuenta de Google</div></div>
+        <div class="help-step"><div class="hs-n">2</div><div class="hs-txt">Haz clic en <strong>Get API Key</strong> en la barra lateral</div></div>
+        <div class="help-step"><div class="hs-n">3</div><div class="hs-txt">Crea una nueva clave o usa una existente</div></div>
+        <div class="help-step"><div class="hs-n">4</div><div class="hs-txt">La clave empieza por <code>AIza...</code></div></div>
+      </div>
+      <div class="api-key-display" id="akd-gemini" style="display:none"><span class="key-masked">••••••••••••••••••••••••</span><button class="btn btn-sm" onclick="clearApiKey('gemini')">Eliminar</button></div>
+      <div id="api-inp-gemini"><div class="input-group"><input type="password" id="api-gemini" placeholder="AIza..."><div class="input-group-btn"><button class="btn btn-sm btn-primary" onclick="saveApiKey('gemini')">Guardar</button></div></div></div>
+    </div>
+
+    <div class="card" style="margin-top:4px">
+      <label style="margin-bottom:10px">Motor preferido</label>
+      <div class="chips" id="chips-preferred-engine">
+        <span class="chip active" onclick="toggleChip(this,'preferred-engine')">Claude (Anthropic)</span>
+        <span class="chip" onclick="toggleChip(this,'preferred-engine')">ChatGPT (OpenAI)</span>
+        <span class="chip" onclick="toggleChip(this,'preferred-engine')">Gemini (Google)</span>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-top:8px">Si el motor principal falla, el sistema cambia automáticamente al siguiente disponible.</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:18px"><button class="btn btn-ghost" onclick="closeModal('modal-api')">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- MÉTRICAS -->
+<div class="modal-overlay" id="modal-metrics" style="display:none" onclick="if(event.target===this)closeModal('modal-metrics')">
+  <div class="modal-box">
+    <div class="modal-title">📊 Métricas manuales <div class="modal-close" onclick="closeModal('modal-metrics')">×</div></div>
+    <div class="alert alert-info" style="margin-bottom:16px">El sistema aprende de tus métricas para ajustar las recomendaciones futuras.</div>
+    <div style="margin-bottom:14px"><label>Pieza de contenido</label><select id="m-piece"><option>-- Selecciona --</option></select></div>
+    <div style="margin-bottom:14px"><label>Plataforma</label><div class="chips" id="chips-m-platform"><span class="chip" onclick="toggleChip(this,'m-platform')">TikTok</span><span class="chip" onclick="toggleChip(this,'m-platform')">Instagram</span><span class="chip" onclick="toggleChip(this,'m-platform')">Facebook</span><span class="chip" onclick="toggleChip(this,'m-platform')">LinkedIn</span></div></div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div><label>👁 Vistas</label><input type="number" id="m-views" placeholder="0"></div>
+      <div><label>❤️ Likes</label><input type="number" id="m-likes" placeholder="0"></div>
+      <div><label>💬 Comentarios</label><input type="number" id="m-comments" placeholder="0"></div>
+      <div><label>🔖 Guardados</label><input type="number" id="m-saves" placeholder="0"></div>
+      <div><label>👥 Seguidores ganados</label><input type="number" id="m-followers" placeholder="0"></div>
+      <div><label>🔁 Compartidos</label><input type="number" id="m-shares" placeholder="0"></div>
+    </div>
+    <div style="margin-bottom:18px"><label>¿Cómo resultó?</label><div class="chips" id="chips-m-result"><span class="chip" onclick="toggleChip(this,'m-result')">🔥 Muy bien</span><span class="chip" onclick="toggleChip(this,'m-result')">📊 Regular</span><span class="chip" onclick="toggleChip(this,'m-result')">❌ No funcionó</span></div></div>
+    <div id="metrics-history" style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px"><button class="btn btn-ghost" onclick="closeModal('modal-metrics')">Cerrar</button><button class="btn btn-primary" onclick="saveMetric()">💾 Guardar métrica</button></div>
+  </div>
+</div>
+
+<!-- AUDITORÍA PRO -->
+<div class="modal-overlay" id="modal-audit-adv" style="display:none" onclick="if(event.target===this)closeModal('modal-audit-adv')">
+  <div class="modal-box">
+    <div class="modal-title">🔍 Auditoría avanzada <div class="modal-close" onclick="closeModal('modal-audit-adv')">×</div></div>
+    <div class="alert alert-info" style="margin-bottom:16px">Diagnóstico profundo con IA. Pega el contenido de tu perfil para un análisis detallado.</div>
+    <div style="margin-bottom:14px"><label>Plataforma</label><div class="chips" id="chips-adv-plat"><span class="chip" onclick="toggleChip(this,'adv-plat')">TikTok</span><span class="chip" onclick="toggleChip(this,'adv-plat')">Instagram</span><span class="chip" onclick="toggleChip(this,'adv-plat')">Facebook</span></div></div>
+    <div style="margin-bottom:14px"><label>URL de tu perfil</label><input type="text" id="adv-url" placeholder="https://www.tiktok.com/@tu_usuario"></div>
+    <div style="margin-bottom:14px"><label>Últimas publicaciones</label><textarea id="adv-posts" placeholder="Pega aquí el texto de tus últimas publicaciones..." style="min-height:120px"></textarea></div>
+    <div style="margin-bottom:14px"><label>Seguidores actuales en esta plataforma</label><input type="number" id="adv-followers" placeholder="0"></div>
+    <div id="adv-result" style="display:none;margin-top:16px"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px"><button class="btn btn-ghost" onclick="closeModal('modal-audit-adv')">Cerrar</button><button class="btn btn-primary" onclick="runAdvancedAudit()">🔍 Ejecutar auditoría</button></div>
+  </div>
+</div>
+
+<!-- PERFIL & AVATAR -->
+<div class="modal-overlay" id="modal-profile" style="display:none" onclick="if(event.target===this)closeModal('modal-profile')">
+  <div class="modal-box">
+    <div class="modal-title">👤 Mi perfil y avatar IA <div class="modal-close" onclick="closeModal('modal-profile')">×</div></div>
+    <div class="grid2" style="margin-bottom:20px">
+      <div style="text-align:center">
+        <div class="avatar-preview" id="profile-avatar-preview">🚀</div>
+        <div style="font-size:14px;color:var(--muted)" id="profile-name-display">Usuario</div>
+        <div style="font-size:12px;color:var(--muted2)" id="profile-email-display">—</div>
+      </div>
+      <div>
+        <div style="margin-bottom:12px"><label>Nombre visible</label><input type="text" id="pf-name" placeholder="Tu nombre"></div>
+        <div><label>Descripción corta</label><textarea id="pf-bio" placeholder="¿Qué haces y en qué nicho trabajas?" style="min-height:70px"></textarea></div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:15px;margin-bottom:14px">🎭 Avatar IA</div>
+      <div class="grid2">
+        <div class="avatar-option" onclick="selectAvatarType('generic',this)"><div class="ao-icon">🤖</div><div class="ao-name">Avatar genérico</div><div class="ao-desc">Icono profesional automático según tu nicho</div></div>
+        <div class="avatar-option" onclick="selectAvatarType('custom',this)"><div class="ao-icon">✨</div><div class="ao-name">Avatar personalizado</div><div class="ao-desc">Generado con DALL-E según tu descripción</div></div>
+      </div>
+      <div id="avatar-custom-form" style="display:none;margin-top:14px">
+        <div class="alert alert-warn" style="margin-bottom:12px">Requiere clave de API de OpenAI configurada (DALL-E 3)</div>
+        <label>Describe tu avatar</label>
+        <textarea id="avatar-desc" placeholder="Ej. Hombre de 30 años, aspecto profesional pero casual, fondo oscuro y tecnológico, estilo futurista..." style="min-height:80px;margin-bottom:10px"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="generateAvatar()">✨ Generar avatar</button>
+        <div id="avatar-gen-result" style="margin-top:12px;display:none;align-items:center;gap:12px">
+          <img id="avatar-gen-img" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);object-fit:cover" alt="Avatar generado">
+          <button class="btn btn-sm btn-green" onclick="useGeneratedAvatar()">Usar este avatar</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn btn-ghost" onclick="closeModal('modal-profile')">Cerrar</button><button class="btn btn-primary" onclick="saveProfile()">💾 Guardar perfil</button></div>
+  </div>
+</div>
+
+<!-- PROGRESO -->
+<div class="modal-overlay" id="modal-progress" style="display:none" onclick="if(event.target===this)closeModal('modal-progress')">
+  <div class="modal-box">
+    <div class="modal-title">📈 Mi progreso <div class="modal-close" onclick="closeModal('modal-progress')">×</div></div>
+    <div class="grid3" style="margin-bottom:20px" id="prog-kpis">
+      <div class="stat-card"><div class="stat-v" id="pk-total-views">—</div><div class="stat-l">Vistas totales</div></div>
+      <div class="stat-card"><div class="stat-v" id="pk-total-follow">—</div><div class="stat-l">Seguidores ganados</div></div>
+      <div class="stat-card"><div class="stat-v" id="pk-pieces">—</div><div class="stat-l">Piezas publicadas</div></div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px">Esta semana</div>
+      <div class="weekly-grid" id="weekly-heatmap"></div>
+      <div class="streak-bar"><div><div class="streak-num" id="streak-days">0</div><div style="font-size:13px;color:var(--muted)">días seguidos</div></div><div style="flex:1"><div style="font-size:14px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:3px" id="streak-msg">Empieza hoy tu racha</div><div style="font-size:13px;color:var(--muted)" id="streak-sub">Publica y registra métricas a diario</div></div></div>
+    </div>
+    <div style="margin-bottom:16px"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px">Crecimiento acumulado</div><div id="progress-chart-wrap"></div></div>
+    <div style="display:flex;justify-content:flex-end"><button class="btn btn-ghost" onclick="closeModal('modal-progress')">Cerrar</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// GROWTH OS v1.1 — JavaScript completo
+// Idioma: español neutro · Mobile-first · Multimodal
+// ═══════════════════════════════════════════════════════════
+
+// ── CIFRADO ──────────────────────────────────────────────────
+const CIPHER_KEY='gos-v11-secure-';
+function simpleEncrypt(str,uid){if(!str)return'';const key=CIPHER_KEY+(uid||'anon');let r='';for(let i=0;i<str.length;i++)r+=String.fromCharCode(str.charCodeAt(i)^key.charCodeAt(i%key.length));return btoa(r);}
+function simpleDecrypt(enc,uid){if(!enc)return'';try{const key=CIPHER_KEY+(uid||'anon');const s=atob(enc);let r='';for(let i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^key.charCodeAt(i%key.length));return r;}catch{return'';}}
+function hashPassword(p){let h=5381;for(let i=0;i<p.length;i++){h=((h<<5)+h)+p.charCodeAt(i);h=h&h;}return'h'+Math.abs(h).toString(36)+p.length.toString(36);}
+
+// ── AUTH ─────────────────────────────────────────────────────
+const USERS_KEY='gos_users_v11',SESSION_KEY='gos_session_v11';
+function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||'{}')}catch{return{}}}
+function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u))}
+function getSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch{return null}}
+function saveSession(s){localStorage.setItem(SESSION_KEY,JSON.stringify(s))}
+function clearSession(){localStorage.removeItem(SESSION_KEY)}
+
+function authSwitchTab(tab){
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));
+  document.getElementById('af-'+tab).classList.add('active');
+}
+function toggleEye(id,btn){const i=document.getElementById(id);if(i.type==='password'){i.type='text';btn.textContent='🙈';}else{i.type='password';btn.textContent='👁';}}
+function doLogin(){
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const pass=document.getElementById('login-pass').value;
+  const err=document.getElementById('auth-login-err');
+  err.style.display='none';
+  if(!email||!pass){err.textContent='Completa todos los campos.';err.style.display='block';return;}
+  const users=getUsers();const user=users[email];
+  if(!user){err.textContent='Correo no registrado.';err.style.display='block';return;}
+  if(user.passHash!==hashPassword(pass)){err.textContent='Contraseña incorrecta.';err.style.display='block';return;}
+  const session={uid:email,name:user.name||email.split('@')[0],email,ts:Date.now()};
+  saveSession(session);afterLogin(session);
+}
+function doRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
+  const pass=document.getElementById('reg-pass').value;
+  const pass2=document.getElementById('reg-pass2').value;
+  const err=document.getElementById('auth-reg-err');const ok=document.getElementById('auth-reg-ok');
+  err.style.display='none';ok.style.display='none';
+  if(!name||!email||!pass){err.textContent='Completa todos los campos.';err.style.display='block';return;}
+  if(pass.length<8){err.textContent='La contraseña debe tener al menos 8 caracteres.';err.style.display='block';return;}
+  if(pass!==pass2){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
+  if(!email.includes('@')){err.textContent='Correo electrónico inválido.';err.style.display='block';return;}
+  const users=getUsers();
+  if(users[email]){err.textContent='Este correo ya está registrado.';err.style.display='block';return;}
+  // Al registrar: guardar trialStartDate desde el primer momento
+  users[email]={name,email,passHash:hashPassword(pass),createdAt:Date.now(),trialStartDate:Date.now(),accessActivated:false,data:{}};
+  saveUsers(users);
+  ok.textContent='✓ Cuenta creada. Iniciando sesión...';ok.style.display='block';
+  setTimeout(()=>{const session={uid:email,name,email,ts:Date.now()};saveSession(session);afterLogin(session);},900);
+}
+function doGoogleLogin(){
+  const fakeEmail='usuario.google@gmail.com';const users=getUsers();
+  if(!users[fakeEmail])users[fakeEmail]={name:'Usuario Google',email:fakeEmail,passHash:'',createdAt:Date.now(),trialStartDate:Date.now(),accessActivated:false,data:{}};
+  // Si ya existe pero no tiene trialStartDate, asignarlo ahora
+  if(users[fakeEmail]&&!users[fakeEmail].trialStartDate){users[fakeEmail].trialStartDate=Date.now();}
+  saveUsers(users);
+  const session={uid:fakeEmail,name:users[fakeEmail].name,email:fakeEmail,ts:Date.now()};
+  saveSession(session);showToast('✓ Sesión iniciada con Google (simulado)');afterLogin(session);
+}
+function doLogout(){
+  clearSession();closeDropdowns();state.uid=null;
+  document.getElementById('dashboard-section').style.display='none';
+  document.getElementById('app').style.display='none';
+  document.getElementById('welcome-overlay').style.display='none';
+  document.getElementById('auth-screen').style.display='block';
+  showToast('Sesión cerrada');
+}
+function afterLogin(session){
+  state.uid=session.uid;
+  document.getElementById('auth-screen').style.display='none';
+  loadUserData();updateUserUI(session);
+
+  // ── TRIAL CHECK NATIVO ──────────────────────────
+  // Garantizar que el usuario tiene trialStartDate
+  const users=getUsers();
+  if(users[session.uid]&&!users[session.uid].trialStartDate){
+    users[session.uid].trialStartDate=Date.now();
+    saveUsers(users);
+  }
+  // Verificar trial antes de mostrar cualquier pantalla
+  if(trialCheckBlock(session.uid)) return;
+  // ───────────────────────────────────────────────
+
+  const hasContent=Object.keys(state.generatedContent).length>0;
+  if(state.mode==='daily'&&hasContent){_goToDashboardInternal();}
+  else{
+    const hasAudit=state.audit&&state.audit.niche;
+    if(!hasAudit){document.getElementById('welcome-overlay').style.display='flex';document.getElementById('app').style.display='none';}
+    else{document.getElementById('welcome-overlay').style.display='none';document.getElementById('app').style.display='flex';restoreAuditForm();updateAuditProgress();}
+  }
+}
+function updateUserUI(session){
+  const initials=(session.name||session.email||'?').substring(0,2).toUpperCase();
+  const a1=document.getElementById('user-avatar-top'),a2=document.getElementById('dash-avatar');
+  const mw=document.getElementById('user-menu-wrap');
+  if(a1){a1.textContent=initials;mw.style.display='block';}
+  if(a2)a2.textContent=initials;
+  const users=getUsers();const user=users[session.uid];
+  if(user&&user.avatarUrl){[a1,a2].forEach(el=>{if(el)el.innerHTML=`<img src="${user.avatarUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;});}
+  document.getElementById('user-email-drop').textContent=session.email;
+  document.getElementById('dash-email-label').textContent=session.email;
+  document.getElementById('profile-name-display').textContent=session.name||session.email;
+  document.getElementById('profile-email-display').textContent=session.email;
+  const pf=document.getElementById('pf-name');if(pf)pf.value=session.name||'';
+}
+function toggleUserMenu(){document.getElementById('user-dropdown').classList.toggle('open');}
+function toggleUserMenuDash(){document.getElementById('dash-dropdown').classList.toggle('open');}
+function closeDropdowns(){document.querySelectorAll('.user-dropdown').forEach(d=>d.classList.remove('open'));}
+document.addEventListener('click',e=>{if(!e.target.closest('.user-menu'))closeDropdowns();});
+
+// ── USER DATA ────────────────────────────────────────────────
+function userKey(k){return`gos_u_${state.uid}_${k}`;}
+function uGet(k,def){try{const v=localStorage.getItem(userKey(k));return v!==null?JSON.parse(v):def;}catch{return def;}}
+function uSet(k,v){try{localStorage.setItem(userKey(k),JSON.stringify(v));}catch{}}
+function loadUserData(){
+  if(!state.uid)return;
+  state.mode=uGet('mode','onboarding');
+  state.audit=uGet('audit',{});
+  state.ideas=uGet('ideas',[]);
+  state.generatedContent=uGet('content',{});
+  state.metrics=uGet('metrics',[]);
+  state.dailyActions=uGet('actions',[]);
+  state.selectedIds=new Set(uGet('selected',[]));
+  state.profile=uGet('profile',{});
+  state.modoCreacion=uGet('modo',1);
+  state.apiKeys={};
+  ['anthropic','openai','gemini'].forEach(p=>{const enc=uGet('apikey_'+p,'');if(enc)state.apiKeys[p]=simpleDecrypt(enc,state.uid);});
+  if(!state.apiKeys.anthropic){const l=localStorage.getItem('gos_anthropic')||'';if(l)state.apiKeys.anthropic=l;}
+  renderApiStatus();
+}
+function saveApiKey(provider){
+  const inp=document.getElementById('api-'+provider);if(!inp)return;
+  const rawKey=inp.value.trim();if(!rawKey)return;
+  const encrypted=simpleEncrypt(rawKey,state.uid||'anon');
+  uSet('apikey_'+provider,encrypted);
+  state.apiKeys=state.apiKeys||{};state.apiKeys[provider]=rawKey;
+  inp.value='';renderApiStatus();showToast('✓ Clave de API guardada y cifrada');
+}
+function clearApiKey(provider){
+  uSet('apikey_'+provider,'');state.apiKeys=state.apiKeys||{};delete state.apiKeys[provider];
+  renderApiStatus();showToast('Clave de API eliminada');
+}
+function renderApiStatus(){
+  ['anthropic','openai','gemini'].forEach(p=>{
+    const has=!!(state.apiKeys&&state.apiKeys[p]);
+    const stEl=document.getElementById('api-st-'+p);
+    const akdEl=document.getElementById('akd-'+p);
+    const inpEl=document.getElementById('api-inp-'+p);
+    if(stEl){stEl.textContent=has?'✓ Activa':'No configurada';stEl.className='api-status '+(has?'api-status-active':'api-status-missing');}
+    if(akdEl)akdEl.style.display=has?'flex':'none';
+    if(inpEl)inpEl.style.display=has?'none':'block';
+  });
+  // Mostrar controles multimodal si hay OpenAI
+  const mc=document.getElementById('multimodal-controls');
+  if(mc)mc.style.display=(state.apiKeys&&state.apiKeys.openai)?'block':'none';
+}
+function getActiveApiKey(){
+  const pref=getChip('preferred-engine')||'';
+  const map={'Claude (Anthropic)':'anthropic','ChatGPT (OpenAI)':'openai','Gemini (Google)':'gemini'};
+  const preferred=map[pref]||'anthropic';
+  const keys=state.apiKeys||{};
+  return keys[preferred]||keys.anthropic||keys.openai||keys.gemini||'';
+}
+function getPreferredEngine(){
+  const pref=getChip('preferred-engine')||'Claude (Anthropic)';
+  if(pref.includes('OpenAI')||pref.includes('ChatGPT'))return'openai';
+  if(pref.includes('Gemini'))return'gemini';
+  return'anthropic';
+}
+
+// ── AYUDA (LUPA) ────────────────────────────────────────────
+function toggleHelp(id){const p=document.getElementById(id);if(p)p.classList.toggle('open');}
+
+// ── ESTADO ──────────────────────────────────────────────────
+const state={
+  uid:null,step:1,mode:'onboarding',
+  audit:{},ideas:[],selectedIds:new Set(),generatedContent:{},
+  apiKeys:{},metrics:[],dailyActions:[],profile:{},
+  filter:'all',avatarType:'generic',generatedAvatarUrl:null,
+  modoCreacion:1,uploadedFiles:[],evalFiles:[]
+};
+
+// ── CHIPS ────────────────────────────────────────────────────
+function toggleChip(el,group){
+  document.querySelectorAll(`#chips-${group} .chip`).forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  if(['objetivo','level','freq','time','style'].includes(group))updateAuditProgress();
+}
+function toggleChipMulti(el,group){
+  el.classList.toggle('active');
+  if(['platforms','content-type'].includes(group))updateAuditProgress();
+}
+function getChip(group){const el=document.querySelector(`#chips-${group} .chip.active`);return el?el.textContent:'';}
+function getChipsMulti(group){return[...document.querySelectorAll(`#chips-${group} .chip.active`)].map(e=>e.textContent);}
+
+// ── PROGRESO AUDITORÍA ───────────────────────────────────────
+function updateAuditProgress(){
+  const fields=[
+    document.getElementById('a-niche')?.value.trim(),
+    getChip('objetivo'),
+    getChipsMulti('platforms').length>0?'ok':'',
+    getChipsMulti('content-type').length>0?'ok':'',
+    getChip('style')
+  ];
+  const filled=fields.filter(Boolean).length;
+  const pct=Math.round((filled/fields.length)*100);
+  const ind=document.getElementById('audit-progress-indicator');
+  if(ind)ind.style.display='block';
+  const pctEl=document.getElementById('audit-pct');if(pctEl)pctEl.textContent=pct+'%';
+  const barEl=document.getElementById('audit-bar');if(barEl)barEl.style.width=pct+'%';
+  const btn=document.getElementById('btn-audit-next');if(btn)btn.disabled=pct<60;
+  const stEl=document.getElementById('audit-status');
+  if(stEl)stEl.textContent=pct<60?`${filled}/${fields.length} campos clave completados`:'✓ Listo para generar ideas';
+}
+function restoreAuditForm(){
+  const sa=state.audit;if(!sa||!sa.niche)return;
+  const setV=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  setV('a-niche',sa.niche);setV('a-followers',sa.followers);setV('a-value',sa.value);setV('a-competitors',sa.competitors);
+  const reChip=(group,val)=>{if(!val)return;document.querySelectorAll(`#chips-${group} .chip`).forEach(c=>{if(c.textContent===val)c.classList.add('active');});};
+  const reChipMulti=(group,vals)=>{if(!vals)return;document.querySelectorAll(`#chips-${group} .chip`).forEach(c=>{if(vals.includes(c.textContent))c.classList.add('active');});};
+  reChip('objetivo',sa.objetivo);reChip('level',sa.level);reChip('freq',sa.freq);reChip('time',sa.time);reChip('style',sa.style);
+  reChipMulti('platforms',sa.platforms);reChipMulti('content-type',sa.contentType);
+}
+
+// ── NAVEGACIÓN ───────────────────────────────────────────────
+function goStep(n){
+  if(n>state.step+1&&state.ideas.length===0&&n>2)return;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('screen'+n);if(el)el.classList.add('active');
+  document.querySelectorAll('.step-item').forEach((el,i)=>{
+    el.classList.remove('active','done');
+    if(i+1<n)el.classList.add('done');
+    if(i+1===n)el.classList.add('active');
+  });
+  document.querySelectorAll('.step-sep').forEach((el,i)=>el.classList.toggle('done',i+1<n));
+  state.step=n;window.scrollTo(0,0);
+  const btnDash=document.getElementById('btn-go-dash');
+  if(btnDash)btnDash.style.display=Object.keys(state.generatedContent).length>0?'inline-flex':'none';
+  if(n===3){renderSelGrid();updateSelCounter();}
+  if(n===5)buildCalendar(state.audit.platforms||['TikTok','Instagram','Facebook']);
+}
+
+// ── LLAMADAS A LA IA ────────────────────────────────────────
+async function callAI(prompt,system=''){
+  const engine=getPreferredEngine();const key=getActiveApiKey();
+  if(!key){openModal('modal-api');throw new Error('Clave de API requerida');}
+  if(engine==='openai')return callOpenAI(prompt,system,key);
+  if(engine==='gemini')return callGemini(prompt,key);
+  return callClaude(prompt,system,key);
+}
+async function callClaude(prompt,system='',key){
+  const body={model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]};
+  if(system)body.system=system;
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify(body)});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return d.content.map(c=>c.text||'').join('');
+}
+async function callOpenAI(prompt,system='',key){
+  const messages=[];if(system)messages.push({role:'system',content:system});messages.push({role:'user',content:prompt});
+  const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'gpt-4o',messages,max_tokens:4000})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return d.choices[0].message.content||'';
+}
+async function callGemini(prompt,key){
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+}
+async function callDalle(prompt){
+  const key=state.apiKeys?.openai;if(!key)throw new Error('Clave de API de OpenAI requerida para imágenes');
+  const r=await fetch('https://api.openai.com/v1/images/generations',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'dall-e-3',prompt,n:1,size:'1024x1024',quality:'standard'})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return d.data[0].url;
+}
+
+// ── AUDITORÍA ────────────────────────────────────────────────
+async function completeAudit(){
+  state.audit={
+    niche:document.getElementById('a-niche').value.trim(),
+    objetivo:getChip('objetivo'),
+    platforms:getChipsMulti('platforms'),
+    level:getChip('level'),
+    freq:getChip('freq'),
+    time:getChip('time'),
+    contentType:getChipsMulti('content-type'),
+    style:getChip('style'),
+    value:document.getElementById('a-value').value.trim(),
+    competitors:document.getElementById('a-competitors').value.trim(),
+    followers:document.getElementById('a-followers').value||'0'
+  };
+  uSet('audit',state.audit);
+  goStep(2);generateIdeas();
+}
+
+// ── MOTOR DE IDEAS ───────────────────────────────────────────
+async function generateIdeas(){
+  document.getElementById('ideas-loader').style.display='flex';
+  document.getElementById('ideas-grid').innerHTML='';
+  const a=state.audit;
+  const prompt=`Eres un experto en crecimiento de redes sociales. Responde siempre en español neutro correcto, sin anglicismos innecesarios y con tildes correctas (á, é, í, ó, ú, ñ). Genera EXACTAMENTE 25 ideas de contenido para:\n
+NICHO: ${a.niche}\nOBJETIVO: ${a.objetivo}\nPLATAFORMAS: ${(a.platforms||[]).join(', ')}\nTIPO DE CONTENIDO: ${(a.contentType||[]).join(', ')}\nESTILO: ${a.style}\nNIVEL: ${a.level} · SEGUIDORES: ${a.followers}\nFRECUENCIA: ${a.freq}\n${a.value?'PROPUESTA DE VALOR: '+a.value:''}\n${a.competitors?'REFERENTES: '+a.competitors:''}\n
+Responde SOLO con JSON válido sin markdown:\n{"ideas":[{"id":1,"titulo":"...","angulo":"...","formato":"...","score":85,"clasificacion":"green","razon":"..."},...]}
+\nclasificacion: "green"(80-100), "amber"(50-79), "red"(0-49). Genera exactamente 25 ideas concretas y creativas.`;
+  try{
+    const raw=await callAI(prompt);
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    state.ideas=parsed.ideas||[];uSet('ideas',state.ideas);
+  }catch(e){state.ideas=generateMockIdeas(a.niche);uSet('ideas',state.ideas);}
+  renderIdeasGrid('ideas-grid',state.ideas);
+  document.getElementById('ideas-sub').textContent=`${state.ideas.length} ideas generadas para "${a.niche}"`;
+  document.getElementById('ideas-loader').style.display='none';
+}
+
+function generateMockIdeas(niche){
+  const t=[
+    ['El error más común en '+niche+' que todos cometen','Contenido educativo que genera guardados',82,'green'],
+    ['Mi historia real: de cero a resultados en '+niche,'Storytelling personal auténtico',91,'green'],
+    ['3 secretos de '+niche+' que nadie te dice','Promesa de valor exclusivo',88,'green'],
+    ['El método más rápido para dominar '+niche,'Tutorial paso a paso y accionable',85,'green'],
+    ['Por qué fracasa el 90% en '+niche,'Perspectiva contrarian que genera debate',79,'green'],
+    ['Lo que los expertos de '+niche+' no quieren que sepas','Contenido de revelación',76,'amber'],
+    ['Resultados en 30 días con '+niche,'Desafío con seguimiento',73,'amber'],
+    ['Herramientas gratuitas de '+niche+' que uso cada día','Lista de recursos útiles',71,'amber'],
+    ['Verdad o mentira: lo más creído sobre '+niche,'Formato educativo de desmitificación',68,'amber'],
+    ['Un día en mi vida creando contenido de '+niche,'Detrás de cámaras',65,'amber'],
+    ['Mi opinión polémica sobre '+niche,'Opinión que polariza inteligentemente',62,'amber'],
+    ['Las preguntas más frecuentes sobre '+niche,'Preguntas y respuestas educativas',60,'amber'],
+    ['Comparativa: los mejores métodos de '+niche,'Análisis comparativo detallado',58,'amber'],
+    ['Experimento: probé '+niche+' durante 7 días','Formato de experimento',55,'amber'],
+    ['El vocabulario básico de '+niche+' que debes conocer','Educativo para principiantes',53,'amber'],
+    ['Tendencias de '+niche+' que debes aprovechar ya','Contenido sobre tendencias actuales',51,'amber'],
+    ['Cómo empezar en '+niche+' con cero recursos','Accesibilidad y democratización',49,'red'],
+    ['Hackeando el algoritmo con '+niche,'Metacontenido sobre creación',45,'red'],
+    ['Un vídeo de '+niche+' que nadie esperaba','Formato sorpresa',43,'red'],
+    ['Reaccionando a los peores ejemplos de '+niche,'Formato de reacción',41,'red'],
+    ['La comunidad de '+niche+' necesita escuchar esto','Mensaje directo a la comunidad',39,'red'],
+    ['Caso de estudio real de '+niche,'Análisis profundo con datos',37,'red'],
+    ['Si yo empezara hoy en '+niche+', haría esto','Retrospectiva de valor',35,'red'],
+    ['ASMR de '+niche+': ¿funciona?','Formato experimental sensorial',30,'red'],
+    ['Lo que nadie dice del fracaso en '+niche,'Vulnerabilidad estratégica',28,'red'],
+  ];
+  return t.map((x,i)=>({id:i+1,titulo:x[0],angulo:x[1],formato:'Vídeo corto / Reel',score:x[2],clasificacion:x[3],razon:'Basado en patrones virales del nicho'}));
+}
+
+function renderIdeasGrid(containerId,ideas,filter='all'){
+  const container=document.getElementById(containerId);
+  const filtered=filter==='all'?ideas:ideas.filter(i=>i.clasificacion===filter);
+  if(!filtered.length){container.innerHTML='<div class="empty"><div class="e-icon">💡</div><p>No hay ideas en esta categoría</p></div>';return;}
+  container.innerHTML=filtered.map(idea=>{
+    const scoreColor=idea.score>=80?'var(--green)':idea.score>=50?'var(--amber)':'var(--red)';
+    const selected=state.selectedIds.has(idea.id);
+    const semCls={green:'sem-green',amber:'sem-amber',red:'sem-red'}[idea.clasificacion]||'sem-amber';
+    const semTxt={green:'🟢 Haz esto primero',amber:'🟡 Opcional',red:'🔴 Experimental'}[idea.clasificacion]||'🟡';
+    return`<div class="idea-card ${selected?'selected':''}" onclick="toggleIdeaSelection(${idea.id},this)" data-class="${idea.clasificacion}">
+      <div class="sel-indicator">${selected?'<svg width="12" height="9" viewBox="0 0 10 8"><path d="M1 4l3 3L9 1" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':''}</div>
+      <div class="sem-label ${semCls}"><div class="sem-dot"></div>${semTxt}</div>
+      <div class="idea-title">${idea.titulo}</div>
+      <div class="idea-angle">${idea.angulo}</div>
+      <div class="idea-footer">
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+          <div style="font-size:12px;color:var(--muted)">Score</div>
+          <div style="font-size:16px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;color:${scoreColor}">${idea.score}</div>
+        </div>
+      </div>
+      <div style="margin-top:10px"><div class="progress-wrap"><div class="progress-bar" style="width:${idea.score}%;background:${scoreColor}40"></div></div></div>
+    </div>`;
+  }).join('');
+}
+
+function toggleIdeaSelection(id,card){
+  if(state.selectedIds.has(id)){state.selectedIds.delete(id);card.classList.remove('selected');card.querySelector('.sel-indicator').innerHTML='';}
+  else{state.selectedIds.add(id);card.classList.add('selected');card.querySelector('.sel-indicator').innerHTML='<svg width="12" height="9" viewBox="0 0 10 8"><path d="M1 4l3 3L9 1" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';}
+  updateSelCounter();
+}
+function updateSelCounter(){
+  const n=state.selectedIds.size;
+  const el=document.getElementById('sel-counter');if(el)el.textContent=n+' seleccionada'+(n!==1?'s':'');
+  const btn=document.getElementById('btn-modo-next');
+  if(btn){
+    if(state.modoCreacion===3)btn.disabled=false;
+    else btn.disabled=n===0;
+  }
+}
+function filterIdeas(filter,btn,context='main'){
+  btn.closest('.filter-bar').querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(context==='sel')renderIdeasGrid('sel-grid',state.ideas,filter);
+  else renderIdeasGrid('ideas-grid',state.ideas,filter);
+}
+function renderSelGrid(filter='all'){renderIdeasGrid('sel-grid',state.ideas,filter);}
+function goToModo(){goStep(3);}
+function regenerateIdeas(){state.selectedIds.clear();generateIdeas();}
+
+// ── MODO CREACIÓN ────────────────────────────────────────────
+function selectModo(n,el){
+  document.querySelectorAll('.modo-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.modoCreacion=n;uSet('modo',n);
+  // Mostrar/ocultar secciones
+  document.getElementById('ideas-selection-wrap').style.display=n===3?'none':'block';
+  document.getElementById('upload-wrap').style.display=n===2?'block':'none';
+  document.getElementById('eval-wrap').style.display=n===3?'block':'none';
+  updateSelCounter();
+  const btn=document.getElementById('btn-modo-next');
+  if(btn){
+    btn.disabled=n===3?false:state.selectedIds.size===0;
+    const labels={1:'Crear contenido para hoy →',2:'Optimizar mi contenido →',3:'Evaluar y mejorar →'};
+    btn.textContent=labels[n]||'Continuar →';
+  }
+}
+
+function handleUpload(input){
+  const files=[...input.files];
+  state.uploadedFiles=files;
+  const preview=document.getElementById('upload-preview');
+  preview.innerHTML=files.map((f,i)=>`<div class="up-file">📎 ${f.name}<span class="up-rm" onclick="removeUpload(${i})">×</span></div>`).join('');
+}
+function removeUpload(i){state.uploadedFiles.splice(i,1);}
+function handleEvalUpload(input){
+  state.evalFiles=[...input.files];
+  const preview=document.getElementById('eval-preview');
+  preview.innerHTML=state.evalFiles.map(f=>`<div class="up-file">📎 ${f.name}</div>`).join('');
+}
+
+async function executeModo(){
+  if(state.modoCreacion===1||state.modoCreacion===2){
+    if(state.selectedIds.size===0){showToast('Selecciona al menos una idea');return;}
+    generateContent();
+  } else if(state.modoCreacion===3){
+    evaluateContent();
+  }
+}
+
+async function evaluateContent(){
+  goStep(4);
+  document.getElementById('content-loader').style.display='flex';
+  document.getElementById('content-output').innerHTML='';
+  const desc=document.getElementById('eval-desc')?.value||'';
+  const a=state.audit;
+  const prompt=`Eres un experto en marketing de contenidos. Responde siempre en español neutro correcto con tildes (á, é, í, ó, ú, ñ).
+El usuario ha creado el siguiente contenido y quiere saber cómo mejorarlo:
+${desc}
+Contexto del creador: nicho="${a.niche}", objetivo="${a.objetivo}", estilo="${a.style}", plataformas=${JSON.stringify(a.platforms)}.
+
+Responde en JSON sin markdown:
+{
+  "puntuacion": 72,
+  "bien": ["...","...","..."],
+  "mejorar": ["...","...","..."],
+  "reescritura": {"hook": "...", "caption": "...", "hashtags": ["...","...","..."]},
+  "consejo_clave": "..."
+}`;
+  try{
+    const raw=await callAI(prompt);
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const scoreColor=parsed.puntuacion>=70?'var(--green)':parsed.puntuacion>=50?'var(--amber)':'var(--red)';
+    document.getElementById('content-output').innerHTML=`
+      <div class="eval-result">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+          <div class="score-ring" style="border-color:${scoreColor};color:${scoreColor};width:56px;height:56px;font-size:16px">${parsed.puntuacion}</div>
+          <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px">Análisis de tu contenido</div><div style="font-size:14px;color:var(--muted)">Puntuación basada en potencial viral y claridad</div></div>
+        </div>
+        <div style="margin-bottom:16px"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:var(--green);margin-bottom:10px">✅ Qué está bien</div>${(parsed.bien||[]).map(b=>`<div class="eval-item"><div class="pr-dot pr-g" style="margin-top:5px;flex-shrink:0"></div><div style="font-size:14px;color:var(--muted2);line-height:1.5">${b}</div></div>`).join('')}</div>
+        <div style="margin-bottom:16px"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:var(--amber);margin-bottom:10px">⚠️ Qué mejorar</div>${(parsed.mejorar||[]).map(m=>`<div class="eval-item"><div class="pr-dot pr-a" style="margin-top:5px;flex-shrink:0"></div><div style="font-size:14px;color:var(--muted2);line-height:1.5">${m}</div></div>`).join('')}</div>
+        ${parsed.reescritura?`<div style="margin-bottom:16px"><div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:var(--accent);margin-bottom:10px">✍️ Versión mejorada</div>
+          <div class="copy-area"><div class="ca-header"><span>🎣 HOOK</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${parsed.reescritura.hook||''}</div>
+          <div class="copy-area"><div class="ca-header"><span>✍️ CAPTION</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${parsed.reescritura.caption||''}</div>
+          <div class="copy-area"><div class="ca-header"><span># HASHTAGS</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${(parsed.reescritura.hashtags||[]).join(' ')}</div>
+        </div>`:''}
+        ${parsed.consejo_clave?`<div class="insight-msg im-tip"><div class="im-icon">💡</div><div><strong>Consejo clave:</strong> ${parsed.consejo_clave}</div></div>`:''}
+      </div>`;
+  }catch(e){document.getElementById('content-output').innerHTML='<div class="alert alert-warn">Error al evaluar. Verifica tu clave de API.</div>';}
+  document.getElementById('content-loader').style.display='none';
+  document.getElementById('content-sub').textContent='Evaluación y mejora de tu contenido';
+}
+
+// ── GENERACIÓN DE CONTENIDO ──────────────────────────────────
+async function generateContent(){
+  if(state.selectedIds.size===0)return;
+  goStep(4);
+  document.getElementById('content-loader').style.display='flex';
+  document.getElementById('content-output').innerHTML='';
+  const selectedIdeas=state.ideas.filter(i=>state.selectedIds.has(i.id));
+  const a=state.audit;
+  const platforms=(a.platforms||[]).length>0?a.platforms:['TikTok','Instagram','Facebook'];
+  const modoCtx=state.modoCreacion===2&&state.uploadedFiles.length>0?' Ten en cuenta que el usuario ya tiene contenido propio para optimizar, así que el guión debe adaptarse como mejora de ese material existente.':'';
+  const prompt=`Eres un experto en marketing de contenidos. Responde siempre en español neutro correcto con tildes y sin anglicismos innecesarios.${modoCtx}
+Genera contenido completo para CADA idea y CADA plataforma.
+
+CONTEXTO DEL CREADOR:
+- Nicho: ${a.niche}
+- Objetivo: ${a.objetivo}
+- Estilo: ${a.style}
+- Tipo preferido: ${(a.contentType||[]).join(', ')}
+- Plataformas: ${platforms.join(', ')}
+
+IDEAS SELECCIONADAS:
+${selectedIdeas.map((i,n)=>`${n+1}. [ID:${i.id}] ${i.titulo} — ${i.angulo}`).join('\n')}
+
+JSON sin markdown:
+{"content":[{"ideaId":1,"titulo":"...","platforms":{"TikTok":{"hook":"...","script":"...","caption":"...","hashtags":["..."]},"Instagram":{...},"Facebook":{...}}},...]}
+
+INSTRUCCIONES:
+- Hook: máximo 2 líneas, impacto inmediato, adaptado a cada plataforma
+- Guión: 180-250 palabras, estructura hook→desarrollo→llamada a la acción, tono ${a.style}
+- Caption: adaptado a cada plataforma (TikTok casual, Instagram aspiracional, Facebook más conversacional)
+- Hashtags: relevantes y específicos
+Solo incluye las plataformas: ${platforms.join(', ')}`;
+  try{
+    const raw=await callAI(prompt);
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    state.generatedContent={};
+    parsed.content.forEach(c=>{state.generatedContent[c.ideaId]=c;});
+  }catch(e){selectedIdeas.forEach(idea=>{state.generatedContent[idea.id]=generateMockContent(idea,platforms);});}
+  uSet('content',state.generatedContent);
+  buildDailyActions(selectedIdeas,platforms);
+  const btnDash=document.getElementById('btn-go-dash');if(btnDash)btnDash.style.display='inline-flex';
+  renderContentOutput((platforms[0]||'TikTok').toLowerCase());
+  buildCalendar(platforms);
+  populateImgTargetPieces();
+  renderApiStatus();
+  document.getElementById('content-loader').style.display='none';
+  document.getElementById('content-sub').textContent=`${Object.keys(state.generatedContent).length} piezas · ${platforms.join(' · ')}`;
+}
+
+function generateMockContent(idea,platforms){
+  const a=state.audit;const pData={};
+  platforms.forEach(p=>{
+    const hooks={TikTok:`Punto de vista: descubres que ${idea.titulo.toLowerCase()} 🤯`,Instagram:`Lo que nadie te dice sobre ${idea.titulo.toLowerCase()} ✨`,Facebook:`Pregunta honesta: ¿ya sabes esto sobre ${idea.titulo.toLowerCase()}?`};
+    pData[p]={
+      hook:hooks[p]||`${idea.titulo} — esto cambiará tu visión de ${a.niche}`,
+      script:`[INICIO]\n${hooks[p]||idea.titulo}\n\n[DESARROLLO]\nHoy hablamos de algo que cambió mi forma de ver ${a.niche}: ${idea.angulo}.\n\nLa mayoría comete el error de ignorar esto. Cuando lo entiendes, todo cambia.\n\nPrimer punto clave: [desarrolla aquí]\nSegundo: el truco está en [punto accionable]\nTercero: lo que pocos hacen es [diferenciador]\n\n[LLAMADA A LA ACCIÓN]\nGuarda esto para no olvidarlo y sígueme para más sobre ${a.niche}. El enlace para trabajar conmigo está en mi perfil.`,
+      caption:`${idea.titulo} 👇\n\n${idea.angulo}.\n\nEsto es lo que me hubiera gustado saber cuando empecé.\n\n¿Cuál es tu mayor reto en ${a.niche}? Cuéntame en los comentarios 👇\n\n💾 Guarda este post para tenerlo a mano`,
+      hashtags:[`#${(a.niche||'').replace(/\s+/g,'')}`,`#${p.toLowerCase()}`,'#crecimiento','#marketing','#emprendimiento']
+    };
+  });
+  return{ideaId:idea.id,titulo:idea.titulo,platforms:pData};
+}
+
+let currentPlatformTab='';
+function renderContentOutput(platform){
+  currentPlatformTab=platform;
+  const output=document.getElementById('content-output');
+  const contents=Object.values(state.generatedContent);
+  if(!contents.length){output.innerHTML='<div class="empty"><div class="e-icon">📝</div><p>Nada generado aún</p></div>';return;}
+  const platformKey=Object.keys(contents[0].platforms||{}).find(k=>k.toLowerCase()===platform)||Object.keys(contents[0].platforms||{})[0];
+  output.innerHTML=contents.map(c=>{
+    const p=c.platforms?.[platformKey];if(!p)return'';
+    return`<div class="content-block">
+      <div class="content-header">
+        <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px">${c.titulo}</div><div style="font-size:13px;color:var(--muted);margin-top:2px">${platformKey}</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="downloadPiece(${c.ideaId},'${platformKey}')">⬇ Descargar</button>
+        </div>
+      </div>
+      <div class="content-body">
+        <div class="copy-area"><div class="ca-header"><span>🎣 HOOK</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${p.hook}</div>
+        <div class="copy-area"><div class="ca-header"><span>📝 GUIÓN</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${(p.script||'').replace(/\n/g,'<br>')}</div>
+        <div class="copy-area"><div class="ca-header"><span>✍️ CAPTION</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${(p.caption||'').replace(/\n/g,'<br>')}</div>
+        <div class="copy-area"><div class="ca-header"><span># HASHTAGS</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${(p.hashtags||[]).join(' ')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchPlatformTab(platform,btn){
+  document.querySelectorAll('#screen4 .ptab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');renderContentOutput(platform);
+}
+
+// ── IMAGEN CON DALL-E ────────────────────────────────────────
+function populateImgTargetPieces(){
+  const sel=document.getElementById('img-target-piece');
+  if(!sel)return;
+  sel.innerHTML='<option>Selecciona una pieza...</option>';
+  Object.values(state.generatedContent).forEach(c=>{sel.innerHTML+=`<option value="${c.ideaId}">${c.titulo}</option>`;});
+}
+async function generateImageForPiece(){
+  const sel=document.getElementById('img-target-piece');
+  const ideaId=parseInt(sel.value);const c=state.generatedContent[ideaId];
+  if(!c){showToast('Selecciona una pieza primero');return;}
+  const a=state.audit;
+  const prompt=`Crea una imagen thumbnail de alta calidad para un vídeo de redes sociales sobre: "${c.titulo}". Nicho: ${a.niche}. Estilo visual: moderno, llamativo, colores vibrantes, sin texto. Professional social media content visual.`;
+  try{
+    showToast('🎨 Generando imagen...');
+    const url=await callDalle(prompt);
+    const wrap=document.getElementById('img-result-wrap');
+    const img=document.getElementById('img-result');
+    img.src=url;wrap.style.display='block';
+    showToast('✓ Imagen generada con éxito');
+  }catch(e){showToast('Error: '+e.message);}
+}
+
+// ── CALENDARIO ───────────────────────────────────────────────
+function buildCalendar(platforms){
+  const contents=Object.values(state.generatedContent);
+  ['tiktok','instagram','facebook'].forEach((pk,pi)=>{
+    const container=document.getElementById('cal-'+pk);
+    const label=['TikTok','Instagram','Facebook'][pi];
+    if(!(platforms||[]).includes(label)){container.innerHTML=`<div class="empty"><div class="e-icon">📅</div><p>${label} no está en tus plataformas activas</p></div>`;return;}
+    const items=contents.filter(c=>c.platforms&&c.platforms[label]);
+    if(!items.length){container.innerHTML=`<div class="empty"><div class="e-icon">📅</div><p>Sin contenido para ${label}</p></div>`;return;}
+    const perDay=Math.ceil(items.length/3);let html='';
+    for(let day=1;day<=3;day++){
+      const dayItems=items.slice((day-1)*perDay,day*perDay);if(!dayItems.length)continue;
+      html+=`<div class="day-block"><div class="day-header"><span>📅 Día ${day}</span><span style="font-weight:400;color:var(--muted2);font-size:12px">${dayItems.length} pieza${dayItems.length!==1?'s':''}</span></div>
+        ${dayItems.map(item=>{const p=item.platforms[label];
+          return`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:12px">
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;margin-bottom:10px">${item.titulo}</div>
+            <div style="font-size:13px;color:var(--muted);background:var(--surface2);padding:10px 12px;border-radius:8px;margin-bottom:10px;font-style:italic">"${p.hook}"</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${(p.hashtags||[]).slice(0,3).map(h=>`<span style="font-size:12px;color:var(--accent);background:rgba(37,99,235,.08);padding:3px 10px;border-radius:12px">${h}</span>`).join('')}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="copyFullPiece(${item.ideaId},'${label}')">📋 Copiar todo</button>
+              <button class="btn btn-secondary btn-sm" onclick="downloadPiece(${item.ideaId},'${label}')">⬇ Descargar</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+    container.innerHTML=html;
+  });
+}
+
+function switchCalTab(platform,btn){
+  document.querySelectorAll('#screen5 .ptab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  ['tiktok','instagram','facebook'].forEach(p=>document.getElementById('cal-'+p).style.display=p===platform?'block':'none');
+}
+
+// ── DESCARGAS ────────────────────────────────────────────────
+function downloadPiece(ideaId,platform){
+  const c=state.generatedContent[ideaId];if(!c)return;
+  const p=c.platforms[platform];if(!p)return;
+  const text=`TÍTULO: ${c.titulo}\nPLATAFORMA: ${platform}\n\n🎣 HOOK:\n${p.hook}\n\n📝 GUIÓN:\n${p.script}\n\n✍️ CAPTION:\n${p.caption}\n\n# HASHTAGS:\n${(p.hashtags||[]).join(' ')}`;
+  download(`${c.titulo.slice(0,30)}_${platform}.txt`,text);
+}
+function copyFullPiece(ideaId,platform){
+  const c=state.generatedContent[ideaId];if(!c)return;
+  const p=c.platforms[platform];if(!p)return;
+  navigator.clipboard.writeText(`${p.hook}\n\n${p.script}\n\n${p.caption}\n\n${(p.hashtags||[]).join(' ')}`);
+  showToast('✓ Pieza completa copiada');
+}
+function downloadAllContent(){
+  let text=`GROWTH OS · CONTENIDO GENERADO\n${'='.repeat(50)}\n\n`;
+  Object.values(state.generatedContent).forEach(c=>{
+    text+=`\n📌 ${c.titulo}\n${'-'.repeat(40)}\n`;
+    Object.entries(c.platforms||{}).forEach(([plat,p])=>{text+=`\n[${plat}]\nHOOK: ${p.hook}\n\nGUIÓN:\n${p.script}\n\nCAPTION:\n${p.caption}\n\nHASHTAGS: ${(p.hashtags||[]).join(' ')}\n\n`;});
+  });
+  download('growth-os-contenido.txt',text);
+}
+function downloadCalendar(){
+  let text=`GROWTH OS · CALENDARIO\n${'='.repeat(50)}\n\n`;
+  ['TikTok','Instagram','Facebook'].forEach(plat=>{
+    text+=`\n📱 ${plat}\n${'-'.repeat(40)}\n`;
+    Object.values(state.generatedContent).filter(c=>c.platforms&&c.platforms[plat]).forEach((item,i)=>{const p=item.platforms[plat];text+=`Día ${i+1}: ${item.titulo}\nHook: ${p.hook}\n\n`;});
+  });
+  download('growth-os-calendario.txt',text);
+}
+function download(filename,text){const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(text);a.download=filename;a.click();}
+function copyText(btn){
+  const area=btn.closest('.copy-area');const clone=area.cloneNode(true);clone.querySelector('.ca-header').remove();
+  navigator.clipboard.writeText(clone.textContent.trim());showToast();
+}
+function showToast(msg='✓ Copiado al portapapeles'){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── MODALES ──────────────────────────────────────────────────
+function openModal(id){
+  document.getElementById(id).style.display='flex';
+  if(id==='modal-metrics'){renderMetricsHistory();populateMetricsPieces();}
+  if(id==='modal-progress')renderProgressModal();
+  if(id==='modal-api')renderApiStatus();
+  if(id==='modal-profile')renderProfileModal();
+}
+function closeModal(id){document.getElementById(id).style.display='none';}
+
+// ── MÉTRICAS ─────────────────────────────────────────────────
+function populateMetricsPieces(){
+  const sel=document.getElementById('m-piece');sel.innerHTML='<option>-- Selecciona --</option>';
+  Object.values(state.generatedContent).forEach(c=>{sel.innerHTML+=`<option value="${c.ideaId}">${c.titulo}</option>`;});
+}
+function saveMetric(){
+  const metric={id:Date.now(),piece:document.getElementById('m-piece').value,platform:getChip('m-platform'),
+    views:+document.getElementById('m-views').value||0,likes:+document.getElementById('m-likes').value||0,
+    comments:+document.getElementById('m-comments').value||0,saves:+document.getElementById('m-saves').value||0,
+    followers:+document.getElementById('m-followers').value||0,shares:+document.getElementById('m-shares').value||0,
+    result:getChip('m-result'),date:new Date().toLocaleDateString('es-ES')};
+  state.metrics.unshift(metric);uSet('metrics',state.metrics);
+  renderMetricsHistory();showToast('✓ Métrica guardada');
+}
+function renderMetricsHistory(){
+  const container=document.getElementById('metrics-history');if(!container)return;
+  if(!state.metrics.length){container.innerHTML='<div style="text-align:center;color:var(--muted);font-size:14px;padding:14px">Sin métricas aún</div>';return;}
+  const colorMap={'🔥 Muy bien':'badge-green','📊 Regular':'badge-amber','❌ No funcionó':'badge-red'};
+  container.innerHTML=`<div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Historial</div>`+
+    state.metrics.slice(0,10).map(m=>`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;margin-bottom:10px;font-size:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+        <div style="font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.piece}</div>
+        <span class="badge ${colorMap[m.result]||'badge-purple'}">${m.result}</span>
+      </div>
+      <div style="color:var(--muted);font-size:13px;margin-bottom:8px">${m.platform} · ${m.date}</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px">
+        <span>👁 ${(m.views||0).toLocaleString()}</span>
+        <span>❤️ ${(m.likes||0).toLocaleString()}</span>
+        <span>💬 ${(m.comments||0).toLocaleString()}</span>
+        <span>👥 +${m.followers||0}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── AUDITORÍA AVANZADA ───────────────────────────────────────
+async function runAdvancedAudit(){
+  const platform=getChip('adv-plat');const url=document.getElementById('adv-url').value;
+  const posts=document.getElementById('adv-posts').value;const followers=document.getElementById('adv-followers').value;
+  const resultDiv=document.getElementById('adv-result');resultDiv.style.display='block';
+  resultDiv.innerHTML='<div class="loader" style="padding:20px"><div class="spinner"></div><p>Analizando perfil...</p></div>';
+  const prompt=`Eres experto en auditoría de redes sociales. Responde en español neutro correcto con tildes. Analiza este perfil:
+Plataforma: ${platform}, URL: ${url}, Seguidores: ${followers}, Publicaciones: ${posts}, Contexto: ${JSON.stringify(state.audit)}
+\nJSON sin markdown:\n{"puntuacion_general":75,"fortalezas":["..."],"errores_criticos":["..."],"oportunidades":["..."],"plan_accion":["Semana 1: ...","Semana 2: ...","Semana 3: ...","Semana 4: ..."],"frecuencia_optima":"...","mejor_horario":"..."}`;
+  try{
+    const raw=await callAI(prompt);const audit=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    resultDiv.innerHTML=`<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);padding:18px">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+        <div class="score-ring" style="border-color:${audit.puntuacion_general>=70?'var(--green)':'var(--amber)'};color:${audit.puntuacion_general>=70?'var(--green)':'var(--amber)'}">${audit.puntuacion_general}</div>
+        <div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px">Puntuación del perfil</div><div style="font-size:13px;color:var(--muted)">${platform}</div></div>
+      </div>
+      ${['fortalezas','errores_criticos','oportunidades'].map(k=>`<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-family:'Plus Jakarta Sans',sans-serif">${k==='fortalezas'?'✅ Fortalezas':k==='errores_criticos'?'⚠️ Errores críticos':'🚀 Oportunidades'}</div>${(audit[k]||[]).map(item=>`<div style="font-size:14px;padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:6px">${item}</div>`).join('')}</div>`).join('')}
+      <div><div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-family:'Plus Jakarta Sans',sans-serif">📅 Plan de acción</div>${(audit.plan_accion||[]).map((p,i)=>`<div style="font-size:14px;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:6px;border-left:3px solid var(--accent)"><strong style="font-family:'Plus Jakarta Sans',sans-serif;color:var(--accent)">Semana ${i+1}:</strong> ${p.replace(/Semana \d+:/,'').trim()}</div>`).join('')}</div>
+      ${audit.frecuencia_optima?`<div style="font-size:14px;color:var(--muted);margin-top:12px">⏰ Frecuencia óptima: <strong style="color:var(--text)">${audit.frecuencia_optima}</strong></div>`:''}
+    </div>`;
+  }catch(e){resultDiv.innerHTML='<div class="alert alert-warn">Error al generar la auditoría. Verifica tu clave de API.</div>';}
+}
+
+// ── AVATAR & PERFIL ──────────────────────────────────────────
+function selectAvatarType(type,el){
+  document.querySelectorAll('.avatar-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');state.avatarType=type;
+  document.getElementById('avatar-custom-form').style.display=type==='custom'?'block':'none';
+}
+function getGenericAvatar(niche){
+  const icons={marketing:'📈',fitness:'💪',finanzas:'💰','tecnología':'💻',moda:'👗',viajes:'✈️',comida:'🍕','educación':'📚',negocios:'💼','salud':'🏥'};
+  const n=(niche||'').toLowerCase();
+  for(const[k,v]of Object.entries(icons))if(n.includes(k))return v;
+  return'🚀';
+}
+async function generateAvatar(){
+  const desc=document.getElementById('avatar-desc').value.trim();if(!desc){showToast('Describe tu avatar primero');return;}
+  const btn=document.querySelector('#avatar-custom-form .btn-primary');btn.disabled=true;btn.textContent='⏳ Generando...';
+  try{
+    const url=await callDalle(`Professional avatar/portrait photo: ${desc}. High quality, professional lighting, clean background, suitable for social media profile picture. Style: modern, professional.`);
+    state.generatedAvatarUrl=url;
+    const resEl=document.getElementById('avatar-gen-result');document.getElementById('avatar-gen-img').src=url;
+    resEl.style.display='flex';resEl.style.alignItems='center';resEl.style.gap='12px';resEl.style.marginTop='12px';
+  }catch(e){showToast('Error: '+e.message);}
+  btn.disabled=false;btn.textContent='✨ Generar avatar';
+}
+function useGeneratedAvatar(){
+  if(!state.generatedAvatarUrl)return;
+  const prevEl=document.getElementById('profile-avatar-preview');
+  if(prevEl)prevEl.innerHTML=`<img src="${state.generatedAvatarUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+  state.profile.avatarUrl=state.generatedAvatarUrl;showToast('Avatar listo. Guarda el perfil para aplicarlo.');
+}
+function saveProfile(){
+  const name=document.getElementById('pf-name').value.trim();const bio=document.getElementById('pf-bio').value.trim();
+  state.profile={...state.profile,name,bio,avatarType:state.avatarType};
+  if(state.avatarType==='generic'||!state.generatedAvatarUrl)state.profile.avatarEmoji=getGenericAvatar(state.audit.niche);
+  uSet('profile',state.profile);
+  const session=getSession();if(session){session.name=name;saveSession(session);}
+  const users=getUsers();if(users[state.uid]){users[state.uid].name=name;users[state.uid].avatarUrl=state.profile.avatarUrl||null;saveUsers(users);}
+  updateUserUI({...getSession(),name});
+  const ae=state.profile.avatarEmoji,au=state.profile.avatarUrl;
+  ['user-avatar-top','dash-avatar'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    if(au)el.innerHTML=`<img src="${au}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+    else if(ae)el.textContent=ae;else el.textContent=name.substring(0,2).toUpperCase();
+  });
+  closeModal('modal-profile');showToast('✓ Perfil guardado');
+}
+function renderProfileModal(){
+  const pf=state.profile;
+  const pfName=document.getElementById('pf-name');const pfBio=document.getElementById('pf-bio');
+  if(pfName&&pf.name)pfName.value=pf.name;if(pfBio&&pf.bio)pfBio.value=pf.bio;
+  const prev=document.getElementById('profile-avatar-preview');
+  if(prev){if(pf.avatarUrl)prev.innerHTML=`<img src="${pf.avatarUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;else prev.textContent=pf.avatarEmoji||getGenericAvatar(state.audit.niche||'')||'🚀';}
+}
+
+// ── PROGRESO MODAL ───────────────────────────────────────────
+function renderProgressModal(){
+  const metrics=state.metrics;
+  const totalViews=metrics.reduce((s,m)=>s+(m.views||0),0);
+  const totalFollow=metrics.reduce((s,m)=>s+(m.followers||0),0);
+  document.getElementById('pk-total-views').textContent=fmtN(totalViews);
+  document.getElementById('pk-total-follow').textContent='+'+totalFollow;
+  document.getElementById('pk-pieces').textContent=metrics.length;
+  renderWeeklyHeatmap();renderCumulativeChart();
+}
+function renderWeeklyHeatmap(){
+  const days=['L','M','X','J','V','S','D'];const now=new Date();let streak=0,sc=true;
+  const html=days.map((d,i)=>{
+    const date=new Date(now);date.setDate(now.getDate()-(6-i));
+    const ds=date.toLocaleDateString('es-ES');const has=state.metrics.some(m=>m.date===ds);
+    if(i===6||sc){if(has)streak++;else if(i<6)sc=false;}
+    return`<div class="wday ${has?'wday-active':'wday-miss'}"><div class="wday-name">${d}</div><div class="wday-dot">${has?'✓':'·'}</div></div>`;
+  }).join('');
+  const hm=document.getElementById('weekly-heatmap');if(hm)hm.innerHTML=html;
+  const sd=document.getElementById('streak-days');const sm=document.getElementById('streak-msg');const ss=document.getElementById('streak-sub');
+  if(sd)sd.textContent=streak;
+  if(sm)sm.textContent=streak>3?'¡Racha increíble! Sigue así 🔥':streak>0?'Racha activa — no la rompas':'Empieza hoy tu racha';
+  if(ss)ss.textContent=streak>0?`${streak} día${streak!==1?'s':''} consecutivo${streak!==1?'s':''} registrando métricas`:'Publica y registra métricas a diario';
+}
+function renderCumulativeChart(){
+  const wrap=document.getElementById('progress-chart-wrap');if(!wrap)return;
+  if(!state.metrics.length){wrap.innerHTML='<div style="text-align:center;color:var(--muted);font-size:14px;padding:20px">Sin datos aún</div>';return;}
+  const last8=state.metrics.slice(0,8).reverse();const maxV=Math.max(...last8.map(m=>m.views||0),1);
+  const barsHtml=last8.map(m=>{
+    const h=Math.max(Math.round((m.views||0)/maxV*100),3);
+    const col=m.result==='🔥 Muy bien'?'var(--green)':m.result==='❌ No funcionó'?'var(--red)':'var(--accent)';
+    return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="font-size:11px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif">${fmtN(m.views||0)}</div>
+      <div style="flex:1;width:100%;display:flex;align-items:flex-end"><div style="width:100%;height:${h}%;background:${col};border-radius:3px 3px 0 0;opacity:.8;min-height:3px"></div></div>
+      <div style="font-size:10px;color:var(--muted2);text-align:center;overflow:hidden;width:100%;text-overflow:ellipsis;white-space:nowrap">${(m.date||'').split('/').slice(0,2).join('/')}</div>
+    </div>`;
+  }).join('');
+  wrap.innerHTML=`<div style="display:flex;align-items:flex-end;gap:6px;height:100px;padding:0 4px">${barsHtml}</div>`;
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────
+function renderDashboard(){renderDateHeader();renderDashYday();renderDashAnalysis();renderDashActions();renderDashContent('tiktok');}
+function renderDateHeader(){const el=document.getElementById('dash-date');if(el)el.textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});}
+function renderDashYday(){
+  const ydEl=document.getElementById('dash-yday');const inputEl=document.getElementById('dash-yday-input');
+  const last=state.metrics[0];
+  if(last){
+    const eng=last.views>0?((last.likes+(last.comments||0)+(last.saves||0))/last.views*100).toFixed(1):'—';
+    const trend=state.metrics.length>1?(last.views>state.metrics[1].views?'▲':last.views<state.metrics[1].views?'▼':'–'):'';
+    ydEl.innerHTML=`<div class="g4" style="margin-bottom:12px">
+      <div class="stat-card"><div class="stat-v">${fmtN(last.views)}</div><div class="stat-l">Vistas</div><div class="stat-trend ${trend==='▲'?'trend-up':trend==='▼'?'trend-dn':'trend-flat'}">${trend}</div></div>
+      <div class="stat-card"><div class="stat-v">${fmtN(last.likes)}</div><div class="stat-l">Likes</div></div>
+      <div class="stat-card"><div class="stat-v" style="color:var(--green)">+${last.followers||0}</div><div class="stat-l">Seguidores</div></div>
+      <div class="stat-card"><div class="stat-v">${eng}%</div><div class="stat-l">Interacción</div></div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:12px 16px;font-size:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="color:var(--muted)">${last.piece||'Contenido'}</span>
+      <span style="color:var(--muted2);font-size:12px">${last.platform} · ${last.date}</span>
+      <button style="margin-left:auto" class="btn btn-ghost btn-sm" onclick="document.getElementById('dash-yday-input').style.display='block'">+ Agregar</button>
+    </div>`;
+    if(inputEl)inputEl.style.display='none';
+  }else{if(ydEl)ydEl.innerHTML='';if(inputEl)inputEl.style.display='block';}
+}
+function saveQuickMetric(){
+  const m={id:Date.now(),piece:'Publicación del día',platform:document.getElementById('qm-platform').value,
+    views:+document.getElementById('qm-views').value||0,likes:+document.getElementById('qm-likes').value||0,
+    comments:0,saves:0,followers:+document.getElementById('qm-followers').value||0,shares:0,
+    result:document.getElementById('qm-result').value,date:new Date().toLocaleDateString('es-ES')};
+  state.metrics.unshift(m);uSet('metrics',state.metrics);
+  renderDashYday();renderDashAnalysis();showToast('✓ Métrica guardada');
+}
+function renderDashAnalysis(){
+  const el=document.getElementById('dash-analysis');if(!el)return;
+  if(!state.metrics.length){el.innerHTML='<div class="pattern-r"><div class="pr-dot pr-a"></div><div class="pr-txt">Sin datos aún. Registra métricas para activar el análisis automático.</div></div>';return;}
+  const platStats={};
+  state.metrics.forEach(m=>{if(!platStats[m.platform])platStats[m.platform]={total:0,views:0,followers:0,wins:0};platStats[m.platform].total++;platStats[m.platform].views+=m.views||0;platStats[m.platform].followers+=m.followers||0;if(m.result==='great'||m.result==='🔥 Muy bien')platStats[m.platform].wins++;});
+  const bp=Object.entries(platStats).sort((a,b)=>b[1].views-a[1].views)[0];
+  const wins=state.metrics.filter(m=>m.result==='great'||m.result==='🔥 Muy bien');
+  const fails=state.metrics.filter(m=>m.result==='bad'||m.result==='❌ No funcionó');
+  const totalF=state.metrics.reduce((s,m)=>s+(m.followers||0),0);
+  const avgV=Math.round(state.metrics.reduce((s,m)=>s+(m.views||0),0)/state.metrics.length);
+  let trendMsg='';
+  if(state.metrics.length>=4){
+    const recent=state.metrics.slice(0,2).reduce((s,m)=>s+(m.views||0),0)/2;
+    const old=state.metrics.slice(2,4).reduce((s,m)=>s+(m.views||0),0)/2;
+    if(recent>old*1.2)trendMsg=`<div class="insight-msg im-win"><div class="im-icon">📈</div><div>El rendimiento de tus últimas piezas está <strong>subiendo</strong>. +${Math.round((recent/old-1)*100)}% respecto al período anterior. Mantén el formato.</div></div>`;
+    else if(recent<old*0.8)trendMsg=`<div class="insight-msg im-warn"><div class="im-icon">⚠️</div><div>El alcance está <strong>bajando</strong>. Prueba un hook diferente o publica en otro horario esta semana.</div></div>`;
+  }
+  el.innerHTML=`${trendMsg}
+    <div class="pattern-r"><div class="pr-dot pr-g"></div><div class="pr-txt"><strong>Mejor plataforma:</strong> ${bp?bp[0]:'Sin datos'} — ${bp?Math.round(bp[1].wins/bp[1].total*100):0}% del contenido funciona bien.</div></div>
+    <div class="pattern-r"><div class="pr-dot pr-g"></div><div class="pr-txt"><strong>Crecimiento total:</strong> +${totalF} seguidores en ${state.metrics.length} piezas. Promedio ${fmtN(avgV)} vistas por pieza.</div></div>
+    ${wins.length>0?`<div class="insight-msg im-win" style="margin-top:12px"><div class="im-icon">✅</div><div>Este formato está funcionando: <strong>"${wins[0].piece}"</strong> en ${wins[0].platform}. Repítelo con variaciones esta semana.</div></div>`:''}
+    ${fails.length>0?`<div class="insight-msg im-warn" style="margin-top:10px"><div class="im-icon">🚫</div><div>Este tipo de contenido no funciona: <strong>"${fails[0].piece}"</strong>. Cambia el hook o evítalo por ahora.</div></div>`:''}
+    <div class="insight-msg im-tip" style="margin-top:10px"><div class="im-icon">💡</div><div>${bp&&bp[1].wins>0?`Duplica el contenido que funcionó en <strong>${bp[0]}</strong>. No diversifiques hasta tener 10 publicaciones exitosas.`:'Publica todos los días esta semana y registra los resultados para mejorar las recomendaciones.'}</div></div>`;
+}
+function renderDashActions(){
+  const el=document.getElementById('dash-actions');if(!el)return;
+  if(!state.dailyActions||!state.dailyActions.length){
+    el.innerHTML=`<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:32px;margin-bottom:12px">📋</div><p style="font-size:15px">Completa el flujo para ver tus acciones de hoy</p><button class="btn btn-primary" style="margin-top:16px" onclick="returnToFlow()">Iniciar flujo →</button></div>`;
+    return;
+  }
+  const done=state.dailyActions.filter(a=>a.done).length;const total=state.dailyActions.length;
+  const pct=total>0?Math.round(done/total*100):0;
+  const progWrap=document.getElementById('dash-actions-progress');
+  if(progWrap){progWrap.style.display='block';document.getElementById('ap-label-n').textContent=`${done}/${total}`;document.getElementById('ap-bar').style.width=pct+'%';}
+  el.innerHTML=state.dailyActions.map((a,i)=>`<div class="action-block p-${a.p} ${a.done?'done-block':''}" id="dab-${a.id}">
+    <div class="ab-num">${i+1}</div>
+    <div class="ab-body">
+      <div class="ab-t" style="${a.done?'text-decoration:line-through;opacity:.35':''}">${a.t}</div>
+      <div class="ab-w">${a.w}</div>
+      <div style="margin-top:7px"><span class="badge ${a.p==='high'?'badge-red':a.p==='med'?'badge-amber':'badge-purple'}" style="font-size:12px">Impacto ${a.p==='high'?'alto':a.p==='med'?'medio':'bajo'}</span></div>
+    </div>
+    <div class="ab-chk ${a.done?'done':''}" onclick="toggleDashAction(${a.id})">${a.done?'<svg width="12" height="9" viewBox="0 0 10 8"><path d="M1 4l3 3L9 1" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':''}</div>
+  </div>`).join('');
+}
+function toggleDashAction(id){const a=state.dailyActions.find(x=>x.id===id);if(a){a.done=!a.done;uSet('actions',state.dailyActions);renderDashActions();}}
+function renderDashContent(platform){
+  ['tiktok','instagram','facebook'].forEach(p=>{const el=document.getElementById('dp-'+p);if(el)el.style.display=p===platform?'block':'none';});
+  const el=document.getElementById('dp-'+platform);if(!el)return;
+  const label={tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook'}[platform];
+  const contents=Object.values(state.generatedContent).filter(c=>c.platforms&&c.platforms[label]);
+  if(!contents.length){el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted)"><div style="font-size:28px;margin-bottom:10px">📱</div><p style="font-size:14px">Sin contenido para ${label} aún.</p><button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="returnToFlow()">Generar →</button></div>`;return;}
+  el.innerHTML=contents.map(c=>{
+    const p=c.platforms[label];const metric=state.metrics.find(m=>m.piece===c.titulo);
+    const perfBadge=metric?`<span class="badge ${metric.result==='🔥 Muy bien'?'badge-green':metric.result==='❌ No funcionó'?'badge-red':'badge-amber'}" style="font-size:11px">${metric.result}</span>`:'';
+    return`<div class="cq-item" onclick="openCDetail(${c.ideaId},'${label}')">
+      <div style="flex:1;min-width:0">
+        <div class="cq-t">${c.titulo}</div>
+        <div class="cq-p">${label} ${perfBadge}</div>
+        <div class="cq-h">"${p.hook}"</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-left:12px;flex-shrink:0">
+        <span style="color:var(--accent);font-size:20px">→</span>
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();copyFullPiece(${c.ideaId},'${label}')">📋</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function switchDP(platform,btn){document.querySelectorAll('.dpt').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderDashContent(platform);}
+function openCDetail(ideaId,platform){
+  const c=state.generatedContent[ideaId];if(!c)return;const p=c.platforms[platform];if(!p)return;
+  openModal('modal-audit-adv');
+  document.querySelector('#modal-audit-adv .modal-title').childNodes[0].textContent=c.titulo+' — '+platform+' ';
+  const rd=document.getElementById('adv-result');rd.style.display='block';
+  rd.innerHTML=`<div class="copy-area"><div class="ca-header"><span>🎣 HOOK</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${p.hook}</div>
+    <div class="copy-area"><div class="ca-header"><span>📝 GUIÓN</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${(p.script||'').replace(/\n/g,'<br>')}</div>
+    <div class="copy-area"><div class="ca-header"><span>✍️ CAPTION</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${(p.caption||'').replace(/\n/g,'<br>')}</div>
+    <div class="copy-area"><div class="ca-header"><span># HASHTAGS</span><button class="copy-btn" onclick="copyText(this)">Copiar</button></div>${(p.hashtags||[]).join(' ')}</div>`;
+}
+
+// ── ACCIONES DIARIAS ─────────────────────────────────────────
+function buildDailyActions(selIdeas,platforms){
+  const a=state.audit;
+  const actions=[
+    {id:1,t:`Publica en ${platforms[0]||'TikTok'}: "${selIdeas[0]?.titulo||'primera idea'}"`,w:`Plataforma prioritaria. Máximo impacto ahora. Usa el hook generado.`,p:'high',done:false},
+    {id:2,t:`Responde todos los comentarios en las primeras 2 horas`,w:`El algoritmo multiplica el alcance con interacción temprana. +30% distribución.`,p:'high',done:false},
+  ];
+  if(selIdeas.length>1)actions.push({id:6,t:`Publica la segunda pieza: "${selIdeas[1]?.titulo||''}"`,w:`Alta frecuencia = crecimiento exponencial en la primera semana.`,p:'high',done:false});
+  actions.push({id:3,t:`Reutiliza en ${platforms[1]||platforms[0]||'Instagram'}: adapta el mismo contenido`,w:`Mismo esfuerzo, doble cobertura de plataformas.`,p:'med',done:false});
+  actions.push({id:4,t:`Registra las métricas del día (📊 Métricas)`,w:`Los datos alimentan el análisis automático de mañana.`,p:'med',done:false});
+  actions.push({id:5,t:`Genera un nuevo lote de ideas si usaste más del 80%`,w:`Canal continuo. Sin pausas en producción de contenido.`,p:'low',done:false});
+  state.dailyActions=actions;uSet('actions',actions);
+}
+
+// ── NAVEGACIÓN MODO ──────────────────────────────────────────
+function startOnboarding(){document.getElementById('welcome-overlay').style.display='none';document.getElementById('app').style.display='flex';updateAuditProgress();}
+function skipToDash(){const hasContent=Object.keys(state.generatedContent).length>0;if(hasContent)goToDashboard();else startOnboarding();}
+// Versión interna sin trial check (para uso interno de afterLogin)
+function _goToDashboardInternal(){
+  document.getElementById('welcome-overlay').style.display='none';
+  document.getElementById('app').style.display='none';
+  document.getElementById('dashboard-section').style.display='block';
+  state.mode='daily';uSet('mode','daily');
+  renderDashboard();window.scrollTo(0,0);
+  // Mostrar banner de advertencia si quedan ≤2 días
+  if(state.uid&&!trialHasAccess(state.uid)){
+    const left=trialDaysLeft(state.uid);
+    if(left<=2)renderTrialBanner(left);
+  }
+}
+// Versión pública con triple verificación
+function goToDashboard(){
+  if(state.uid&&trialCheckBlock(state.uid))return;
+  _goToDashboardInternal();
+}
+function returnToFlow(){
+  document.getElementById('dashboard-section').style.display='none';
+  document.getElementById('app').style.display='flex';
+  goStep(state.ideas.length>0?2:1);
+}
+
+// ── UTILIDADES ───────────────────────────────────────────────
+function fmtN(n){return n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n||0);}
+
+// ══════════════════════════════════════════════
+// TRIAL 7 DÍAS — IMPLEMENTACIÓN LIMPIA
+// ══════════════════════════════════════════════
+const TRIAL_DAYS = 7;
+
+// ── Helpers de trial ─────────────────────────
+function trialStartDate(uid){
+  const u=getUsers()[uid];
+  return u?u.trialStartDate||null:null;
+}
+function trialDaysUsed(uid){
+  const s=trialStartDate(uid);
+  if(!s)return 0;
+  return Math.floor((Date.now()-s)/(1000*60*60*24));
+}
+function trialDaysLeft(uid){
+  return Math.max(0,TRIAL_DAYS-trialDaysUsed(uid));
+}
+function trialExpired(uid){
+  const s=trialStartDate(uid);
+  if(!s)return false;
+  return trialDaysUsed(uid)>TRIAL_DAYS;
+}
+function trialHasAccess(uid){
+  const u=getUsers()[uid];
+  return u&&u.accessActivated===true;
+}
+
+// ── Función central: verifica y bloquea si es necesario ──────
+// Retorna true si bloqueó (para hacer return en afterLogin/goToDashboard)
+function trialCheckBlock(uid){
+  if(!uid)return false;
+  if(trialHasAccess(uid))return false;   // acceso activado → no bloquear
+  if(trialExpired(uid)){                 // trial terminó → bloquear
+    _showTrialExpiredScreen(uid);
+    return true;
+  }
+  return false;
+}
+
+// ── Pantalla de trial expirado ───────────────
+function _showTrialExpiredScreen(uid){
+  const used=trialDaysUsed(uid);
+  // Ocultar todo
+  ['dashboard-section','app','welcome-overlay','auth-screen','trial-expired']
+    .forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const sc=document.getElementById('trial-expired');
+  if(!sc)return;
+  sc.style.display='block';
+  const lbl=document.getElementById('trial-days-label');
+  if(lbl)lbl.textContent=`Prueba de ${TRIAL_DAYS} días finalizada · ${used} días de uso`;
+  window.scrollTo(0,0);
+}
+
+// ── Banner en dashboard ──────────────────────
+function renderTrialBanner(daysLeft){
+  const b=document.getElementById('trial-banner-dash');if(!b)return;
+  b.style.display='block';
+  if(daysLeft===0){
+    b.innerHTML=`<strong>⚠️ Último día de prueba gratuita.</strong> Activa tu acceso para no perder el acceso a Growth OS.&nbsp;<button class="btn btn-sm" style="background:var(--amber);color:#000;border:none;padding:6px 14px;font-size:13px" onclick="contactarActivar()">Activar ahora →</button>`;
+  }else{
+    b.innerHTML=`<strong>⏳ Te quedan ${daysLeft} día${daysLeft!==1?'s':''} de prueba gratuita.</strong> Activa tu acceso para continuar sin interrupciones.&nbsp;<button class="btn btn-sm" style="background:var(--amber);color:#000;border:none;padding:6px 14px;font-size:13px" onclick="contactarActivar()">Activar acceso →</button>`;
+  }
+}
+
+// ── Botón Contactar ──────────────────────────
+function contactarActivar(){
+  const msg=encodeURIComponent('Hola, quiero activar mi acceso completo a Growth OS.');
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+
+// ── Código de activación manual ─────────────
+function activarAccesoManual(){
+  const code=prompt('Ingresa tu código de activación:');
+  if(!code)return;
+  const VALID=['GROWTHPRO','ACTIVO2025','FULLACCESS'];
+  if(VALID.includes(code.toUpperCase().trim())){
+    const users=getUsers();
+    if(users[state.uid]){users[state.uid].accessActivated=true;saveUsers(users);}
+    document.getElementById('trial-expired').style.display='none';
+    showToast('✓ Acceso activado correctamente');
+    const hasContent=Object.keys(state.generatedContent).length>0;
+    if(hasContent)_goToDashboardInternal();
+    else document.getElementById('welcome-overlay').style.display='flex';
+  }else{
+    alert('Código incorrecto. Contacta al equipo de Growth OS para obtener tu código.');
+  }
+}
+
+// Alias retrocompatibles (por si hay referencias a nombres anteriores)
+function getTrialStartDate(uid){return trialStartDate(uid);}
+function setTrialStartDate(uid){
+  const users=getUsers();
+  if(users[uid]&&!users[uid].trialStartDate){users[uid].trialStartDate=Date.now();saveUsers(users);}
+}
+function getTrialDaysUsed(uid){return trialDaysUsed(uid);}
+function getTrialDaysLeft(uid){return trialDaysLeft(uid);}
+function isTrialExpired(uid){return trialExpired(uid);}
+function hasActivatedAccess(uid){return trialHasAccess(uid);}
+function checkTrialAndRoute(uid){return trialCheckBlock(uid);}
+function showTrialExpired(uid){_showTrialExpiredScreen(uid);}
+
+// ══════════════════════════════════════════════
+// PARCHE 2 — AUTO-PROMOCIÓN
+// ══════════════════════════════════════════════
+const PROMO_DATA = [
+  {
+    tag: 'Idea 1 · Video / Reel',
+    hook: '"Así estoy creciendo en redes sin perder horas de mi día"',
+    guion: '¿Sabías que puedes tener tu contenido de toda la semana listo en menos de 30 minutos? Yo lo hago con Growth OS: entro, pongo mi nicho, y la IA me genera hooks, guiones y captions listos para copiar y publicar. Sin bloqueos creativos, sin excusas.',
+    caption: 'Crecimiento en redes sin morir en el intento 🙌 Encontré una herramienta que me genera todo el contenido con IA en minutos. Si quieres saber cómo funciona, comenta "TOOL" y te explico 👇',
+    formato: 'Video corto o Reel (30–60 segundos)'
+  },
+  {
+    tag: 'Idea 2 · Story / Post',
+    hook: '"La IA me hace el contenido diario — esto es lo que publico cada semana"',
+    guion: 'Antes me pasaba el día pensando qué publicar y al final no publicaba nada. Ahora uso Growth OS: le digo mi nicho, selecciono ideas con puntuación de viralidad, y el sistema me crea el hook, guión y caption adaptado a cada red social. Resultado: publico todos los días sin estrés.',
+    caption: 'Esto es lo que publico cada semana con ayuda de IA 🤖 Un sistema que me genera ideas, hooks y guiones en minutos. ¿Quieres ver cómo funciona? Te paso la app si me escribes al DM 🚀',
+    formato: 'Story con texto o post estático'
+  },
+  {
+    tag: 'Idea 3 · Reel / TikTok',
+    hook: '"Esto es lo que publico todos los días con IA — y así me está yendo"',
+    guion: 'Te muestro mi proceso real: entro a Growth OS cada mañana, elijo las mejores ideas para mi nicho, y en minutos tengo guiones listos para grabar. No improviso. No me bloqueo. Solo grabo y publico. En [X] semanas he pasado de [Y] a [Z] seguidores siguiendo este sistema.',
+    caption: 'Mi proceso de creación de contenido con IA explicado en 60 segundos ⚡ Sin perder tiempo. Sin bloqueo creativo. ¿Te explico cómo lo hago? Comenta "SISTEMA" y te cuento todo 👇 #contenido #IA #crecimientopersonal #redessociales',
+    formato: 'Reel o TikTok (45–90 segundos)'
+  }
+];
+
+function copyPromo(idx) {
+  const d = PROMO_DATA[idx];
+  const text = `${d.tag}\n\n🎣 HOOK:\n${d.hook}\n\n📝 GUIÓN:\n${d.guion}\n\n✍️ CAPTION:\n${d.caption}\n\n📐 FORMATO RECOMENDADO: ${d.formato}`;
+  navigator.clipboard.writeText(text).then(() => showToast('✓ Copiado al portapapeles'));
+}
+
+function downloadPromo(idx) {
+  const d = PROMO_DATA[idx];
+  const text = `GROWTH OS — Idea de promoción\n${'='.repeat(45)}\n\n${d.tag}\n\n🎣 HOOK:\n${d.hook}\n\n📝 GUIÓN:\n${d.guion}\n\n✍️ CAPTION:\n${d.caption}\n\n📐 FORMATO RECOMENDADO: ${d.formato}`;
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+  a.download = `promo-growthos-${idx + 1}.txt`;
+  a.click();
+}
+
+let promoVisible = true;
+function togglePromo() {
+  promoVisible = !promoVisible;
+  const wrap = document.getElementById('promo-cards-wrap');
+  if (wrap) wrap.style.display = promoVisible ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════════════
+// INIT — con verificación de trial integrada
+// ══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  const session=getSession();
+  if(session&&session.uid){
+    state.uid=session.uid;
+    loadUserData();
+    updateUserUI(session);
+
+    // Garantizar trialStartDate en usuarios existentes sin él
+    const users=getUsers();
+    if(users[session.uid]&&!users[session.uid].trialStartDate){
+      users[session.uid].trialStartDate=Date.now();
+      saveUsers(users);
+    }
+
+    // Verificar trial ANTES de mostrar cualquier pantalla
+    if(trialCheckBlock(session.uid)) return;
+
+    const hasContent=Object.keys(state.generatedContent).length>0;
+    if(state.mode==='daily'&&hasContent){_goToDashboardInternal();}
+    else{
+      const hasAudit=state.audit&&state.audit.niche;
+      if(!hasAudit){document.getElementById('welcome-overlay').style.display='flex';document.getElementById('app').style.display='none';}
+      else{document.getElementById('welcome-overlay').style.display='none';document.getElementById('app').style.display='flex';restoreAuditForm();updateAuditProgress();}
+    }
+  }else{
+    // Sin sesión → forzar login
+    document.getElementById('welcome-overlay').style.display='none';
+    document.getElementById('app').style.display='none';
+    document.getElementById('dashboard-section').style.display='none';
+    document.getElementById('auth-screen').style.display='block';
+  }
+  // Drag & drop
+  const dz=document.getElementById('drop-zone');
+  if(dz){
+    dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+    dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+    dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');document.getElementById('upload-input').files=e.dataTransfer.files;handleUpload(document.getElementById('upload-input'));});
+  }
+});
+</script>
+</body>
+</html>
